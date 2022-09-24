@@ -15,6 +15,7 @@ const Notes = () => {
   const [note, setNote] = useState({
     noteTitle: "",
     noteText: "",
+    time: "",
   });
   const [notesData, setNotesData] = useState(getLocalData());
   const [toggle, setToggle] = useState(false);
@@ -61,6 +62,7 @@ const Notes = () => {
               ...notesData,
               noteTitle: note.noteTitle,
               noteText: note.noteText,
+              noteTime: note.time,
             };
           }
           return elem;
@@ -70,6 +72,7 @@ const Notes = () => {
       setNote({
         noteTitle: "",
         noteText: "",
+        noteTime: "",
       });
       setIsId(null);
     } else {
@@ -77,6 +80,7 @@ const Notes = () => {
       setNote({
         noteTitle: "",
         noteText: "",
+        noteTime: "",
       });
     }
   };
@@ -94,7 +98,7 @@ const Notes = () => {
   const updateNote = (id, noteTitle, noteText) => {
     setToggle(true);
     setIsId(id);
-    setNote({ noteTitle: noteTitle, noteText: noteText });
+    setNote({ noteTitle: noteTitle, noteText: noteText, time: Date.now() });
   };
 
   useEffect(() => {

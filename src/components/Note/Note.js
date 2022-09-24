@@ -1,7 +1,7 @@
 import React from "react";
 import "./Note.scss";
 
-const Note = ({ note, deleteNote ,updateNote}) => {
+const Note = ({ note, deleteNote, updateNote }) => {
   const formatTimeDate = (value) => {
     if (!value) return "";
 
@@ -22,17 +22,11 @@ const Note = ({ note, deleteNote ,updateNote}) => {
     ];
 
     let hrs = date.getHours();
-    let amPm = hrs >= 12 ? "PM" : "AM";
-    hrs = hrs ? hrs : "12";
-    hrs = hrs > 12 ? (hrs = 24 - hrs) : hrs;
-
     let min = date.getMinutes();
-    min = min < 10 ? "0" + min : min;
-
     let day = date.getDate();
     const month = monthNames[date.getMonth()];
 
-    return `${hrs}:${min} ${amPm} ${day} ${month}`;
+    return `${hrs}:${min} ${day} ${month}`;
   };
   return (
     <div className="app__notes row g-3 mt-md-4 mt-1">
@@ -42,18 +36,29 @@ const Note = ({ note, deleteNote ,updateNote}) => {
             <div className="card shadow rounded-4 border-0 p-2">
               <div className="card-body">
                 <h5 className="card-title">{item.noteTitle}</h5>
-                <hr/>
+                <hr />
                 <p className="card-text">{item.noteText}</p>
                 <div className="card-time-btn">
                   <span className="time-date">
                     {formatTimeDate(item.noteTime)}
                   </span>
                   <div className="card-btn">
-                    <button type="button" data-bs-toggle="modal"
-                    data-bs-target="#noteModal" onClick={() => updateNote(item.id, item.noteTitle, item.noteText)} className="edit">
+                    <button
+                      type="button"
+                      data-bs-toggle="modal"
+                      data-bs-target="#noteModal"
+                      onClick={() =>
+                        updateNote(item.id, item.noteTitle, item.noteText)
+                      }
+                      className="edit"
+                    >
                       <i className="fi fi-rr-pencil"></i>
                     </button>
-                    <button type="button" onClick={() => deleteNote(item.id)} className="delete">
+                    <button
+                      type="button"
+                      onClick={() => deleteNote(item.id)}
+                      className="delete"
+                    >
                       <i className="fi fi-rr-trash"></i>
                     </button>
                   </div>
