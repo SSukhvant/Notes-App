@@ -113,6 +113,7 @@ const Notes = () => {
           type="text"
           name="searchNote"
           value={search}
+          autoComplete="off"
           onChange={(e) => handleSearch(e.target.value)}
           placeholder="Search Note"
           className="shadow-sm border-1"
