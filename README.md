@@ -1,3 +1,18 @@
+ # Notes App
+ 
+ ![alt text](./src/assets/NotesApp.png)
+
+ # Add New Note
+
+ ![alt text](./src/assets/AddNotes.png)
+
+ # Update Note
+
+ ![alt text](./src/assets/UpdateNote.png)
+
+  ## Open [https://ssukhvant.netlify.app/](https://ssukhvant.netlify.app/) to view it in your browser.
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
