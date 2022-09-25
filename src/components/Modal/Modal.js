@@ -1,6 +1,7 @@
 import React from "react";
 
-const Modal = ({ noteTitle, noteText, handleInput, saveNote, toggle }) => {
+const Modal = ({ noteTitle, noteText, handleInput,handleColorInput, saveNote, toggle }) => {
+  const colors = ["#fab1a0","#ffeaa7","#74b9ff","#a29bfe","#55efc4","#dfe6e9"]
   return (
     <div
       className="modal fade"
@@ -51,7 +52,19 @@ const Modal = ({ noteTitle, noteText, handleInput, saveNote, toggle }) => {
               </div>
             </div>
           </div>
-          <div className="modal-footer">
+          <div className="modal-footer d-flex justify-content-between align-items-center">
+          <div className="color-btns">
+           <ul>
+           {colors.map((item,key) => {
+            return (
+              <li className="color-btn" key={key} style={{backgroundColor: item}}>
+              <input type="radio" name="noteColor" onClick={(e) => handleColorInput(item)}/>
+              <span className="checkmark"></span>
+              </li>
+            )
+           })}
+           </ul>
+          </div>
             <button
               type="button"
               onClick={saveNote}

@@ -25,11 +25,16 @@ const Notes = () => {
   const [isId, setIsId] = useState();
   const [searchNote, setSearchNote] = useState(notesData);
   const [search, setSearch] = useState("");
+  const [color, setColor] = useState("");
 
   const handleInput = (event) => {
     const { name, value } = event.target;
     setNote({ ...note, [name]: value });
   };
+
+  const handleColorInput = (val) => {
+    setColor(val);
+  }
 
   const handleSearch = (value) => {
     setSearch(value);
@@ -55,6 +60,7 @@ const Notes = () => {
       noteTitle: note.noteTitle,
       noteText: note.noteText,
       noteTime: Date.now(),
+      colorNote: color
     };
     if (!note) {
     } else if (note && toggle === true) {
@@ -66,6 +72,7 @@ const Notes = () => {
               noteTitle: note.noteTitle,
               noteText: note.noteText,
               noteTime: note.time,
+              colorNote: color
             };
           }
           return elem;
@@ -78,12 +85,14 @@ const Notes = () => {
         noteTime: "",
       });
       setIsId(null);
+      setColor("")
     } else {
       setNotesData([...notesData, allNotes]);
       setNote({
         noteTitle: "",
         noteText: "",
         noteTime: "",
+        colorNote: ""
       });
     }
   };
@@ -121,6 +130,7 @@ const Notes = () => {
         noteTitle={note.noteTitle}
         noteText={note.noteText}
         handleInput={handleInput}
+        handleColorInput={handleColorInput}
         saveNote={saveNote}
         toggle={toggle}
       />

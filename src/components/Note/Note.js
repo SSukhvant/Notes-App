@@ -33,7 +33,7 @@ const Note = ({ note, deleteNote, updateNote }) => {
       {note.map((item, key) => {
         return (
           <div className="app__note col-sm-3 p-xxl-3 p-xl-2 p-lg-3 p-2" key={key}>
-            <div className="card shadow-sm rounded-4 border-1">
+            <div className="card shadow-sm rounded-4 border-1" style={{backgroundColor: `${item.colorNote ==="" ? "#fff" : item.colorNote}`}}>
               <div className="card-body">
                 <h5 className="card-title">{item.noteTitle}</h5>
                 <hr />
