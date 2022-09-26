@@ -1,6 +1,6 @@
 {
-  "short_name": "Notes App",
-  "name": "Create React App Sample",
+  "short_name": "Notes",
+  "name": "Keep Notes",
   "icons": [
     {
       "src": "favicon.ico",

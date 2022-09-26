@@ -4,7 +4,7 @@ import './Header.scss'
 const Header = ({search, handleSearch, setToggle, setNote}) => {
   return (
     <div className="app__header pt-4 px-4">
-    <h2 className="app__name">Notes App</h2>
+    <h2 className="app__name">Keep Notes</h2>
     <input
       type="text"
       name="searchNote"
