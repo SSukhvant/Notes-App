@@ -7,38 +7,42 @@
         flex: 1 1 25%;
         max-width: 25%;
 
-        /* For Tablet View */
         @media screen and (min-device-width: 992px) and (max-device-width: 1200px) {
-        flex: 1 1 33.3%;
-        max-width: 33.3%;
+            flex: 1 1 33.3%;
+            max-width: 33.3%;
         }
 
         @media screen and (min-device-width: 768px) and (max-device-width: 992px) {
             flex: 1 1 33.3%;
             max-width: 33.3%;
         }
+
         @media screen and (min-device-width: 576px) and (max-device-width: 768px) {
             flex: 1 1 50%;
             max-width: 50%;
         }
+
         @media screen and (min-device-width: 0) and (max-device-width: 576px) {
             flex: 1 1 100%;
             max-width: 100%;
         }
 
         .card {
+            // font-family: 'Roboto', sans-serif;
             .card-body {
                 .card-text {
                     text-align: justify;
                     word-spacing: normal;
+
                     @media screen and (min-device-width: 768px) and (max-device-width: 992px) {
                         font-size: 0.8rem;
-                }
-                @media screen and (min-device-width: 576px) and (max-device-width: 768px) {
-                    font-size: 0.8rem;
-                }
+                    }
 
-            }
+                    @media screen and (min-device-width: 576px) and (max-device-width: 768px) {
+                        font-size: 0.8rem;
+                    }
+
+                }
 
                 .card-time-btn {
                     display: flex;

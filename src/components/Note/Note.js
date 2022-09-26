@@ -29,11 +29,11 @@ const Note = ({ note, deleteNote, updateNote }) => {
     return `${hrs}:${min} ${day} ${month}`;
   };
   return (
-    <div className="app__notes row g-2 mt-4 px-2 g-lg-3 mt-lg-4 px-lg-3 g-xl-2 mt-xl-4 px-xl-2 g-xxl-3 mt-xxl-4 px-xxl-3 border-end border-start border-top">
+    <div className="app__notes row g-2 mt-4 px-2 g-lg-3 mt-lg-4 px-lg-3 g-xl-2 mt-xl-4 px-xl-2 g-xxl-3 mt-xxl-4 px-xxl-3 border-end border-start border-top rounded">
       {note.map((item, key) => {
         return (
           <div className="app__note col-sm-3 p-xxl-3 p-xl-2 p-lg-3 p-2" key={key}>
-            <div className="card shadow-sm rounded-4 border-1" style={{backgroundColor: `${item.noteColor ==="" ? "#fff" : item.noteColor}`}}>
+            <div className="card shadow rounded border-0" style={{backgroundColor: `${item.noteColor ==="" ? "#fff" : item.noteColor}`}}>
               <div className="card-body">
                 <h5 className="card-title">{item.noteTitle}</h5>
                 <hr />
