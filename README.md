@@ -10,7 +10,7 @@
 
  ![alt text](./src/assets/UpdateNote.png)
 
-  ## Open [https://ssukhvant.netlify.app/](https://ssukhvant.netlify.app/) to view it in your browser.
+  ## [Click here](https://s-notes-app.netlify.app/) to view it in your browser or you can visit [https://s-notes-app.netlify.app/](https://s-notes-app.netlify.app/)
 
 
 # Getting Started with Create React App

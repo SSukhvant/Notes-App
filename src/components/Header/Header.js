@@ -1,10 +1,14 @@
 import React from 'react'
 import './Header.scss'
+import logo32 from '../../assets/logo32.png';
 
 const Header = ({search, handleSearch, setToggle, setNote}) => {
   return (
     <div className="app__header pt-4 px-4">
+    <div className='app__name-logo'>
+    <img src={logo32} alt="logo" className='app__logo'/>
     <h2 className="app__name">Keep Notes</h2>
+    </div>
     <input
       type="text"
       name="searchNote"

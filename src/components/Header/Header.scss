@@ -5,10 +5,20 @@
     @media screen and (max-width: 768px) {
         flex-direction: column;
       }
-    .app__name{
-        font-family: 'Potta One', cursive;
-        text-align: center;
+    .app__name-logo{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        .app__logo{
+            transform: rotate(-10deg);
+        }
+        .app__name{
+            font-family: 'Potta One', cursive;
+            text-align: center;
+        }
     }
+
     input{
         flex: 1 1 50%;
         max-width: 50%;
