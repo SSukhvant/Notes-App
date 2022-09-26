@@ -19,13 +19,14 @@ const Notes = () => {
     noteTitle: "",
     noteText: "",
     time: "",
+    noteColor:""
   });
   const [notesData, setNotesData] = useState(getLocalData());
   const [toggle, setToggle] = useState(false);
   const [isId, setIsId] = useState();
   const [searchNote, setSearchNote] = useState(notesData);
   const [search, setSearch] = useState("");
-  const [color, setColor] = useState("");
+  // const [color, setColor] = useState("");
 
   const handleInput = (event) => {
     const { name, value } = event.target;
@@ -33,7 +34,7 @@ const Notes = () => {
   };
 
   const handleColorInput = (val) => {
-    setColor(val);
+    setNote({...note, noteColor: val});
   }
 
   const handleSearch = (value) => {
@@ -60,39 +61,47 @@ const Notes = () => {
       noteTitle: note.noteTitle,
       noteText: note.noteText,
       noteTime: Date.now(),
-      colorNote: color
+      noteColor: note.noteColor
     };
     if (!note) {
     } else if (note && toggle === true) {
-      setNotesData(
-        notesData.map((elem) => {
-          if (elem.id === isId) {
-            return {
-              ...notesData,
-              noteTitle: note.noteTitle,
-              noteText: note.noteText,
-              noteTime: note.time,
-              colorNote: color
-            };
-          }
-          return elem;
-        })
-      );
-
+      // setNotesData(
+      //   notesData.map((elem) => {
+      //     if (elem.id === isId) {
+      //       return {
+      //         ...notesData,
+      //         noteTitle: note.noteTitle,
+      //         noteText: note.noteText,
+      //         noteTime: note.time,
+      //         noteColor: note.noteColor
+      //       };
+      //     }
+      //     return elem;
+      //   })
+      // );
+      let items = [...notesData];
+      let item = items[isId]
+      console.log(item)
+      item.noteTitle = note.noteTitle
+      item.noteText = note.noteText
+      item.Time = note.time
+      item.noteColor = note.noteColor
+      items[isId] = item
+      setNotesData(items)
       setNote({
         noteTitle: "",
         noteText: "",
         noteTime: "",
-      });
+        noteColor:"",
+      }); 
       setIsId(null);
-      setColor("")
     } else {
       setNotesData([...notesData, allNotes]);
       setNote({
         noteTitle: "",
         noteText: "",
         noteTime: "",
-        colorNote: ""
+        noteColor: ""
       });
     }
   };
@@ -107,10 +116,14 @@ const Notes = () => {
     setNotesData(tempDeleteNotes);
   };
 
-  const updateNote = (id, noteTitle, noteText) => {
+  const updateNote = (id, noteTitle, noteText, noteColor) => {
     setToggle(true);
     setIsId(id);
-    setNote({ noteTitle: noteTitle, noteText: noteText, time: Date.now() });
+    setNote({ noteTitle: noteTitle, noteText: noteText, time: Date.now(), noteColor: noteColor });
+    let tempUpdateNotes = [...notesData];
+    const index = tempUpdateNotes.findIndex((i) => i.id === id);
+    if (index < 0) return;
+    setIsId(index)
   };
 
   useEffect(() => {
@@ -127,8 +140,7 @@ const Notes = () => {
       />
 
       <Modal
-        noteTitle={note.noteTitle}
-        noteText={note.noteText}
+        note={note}
         handleInput={handleInput}
         handleColorInput={handleColorInput}
         saveNote={saveNote}

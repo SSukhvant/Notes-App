@@ -21,7 +21,7 @@ const Header = ({search, handleSearch, setToggle, setNote}) => {
       data-bs-target="#noteModal"
       onClick={() => {
         setToggle(false);
-        setNote({ noteTitle: "", noteText: "" });
+        setNote({ noteTitle: "", noteText: "", noteColor:"" });
       }}
     >
       <i className="fi fi-br-plus"></i>

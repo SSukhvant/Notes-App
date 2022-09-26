@@ -33,7 +33,7 @@ const Note = ({ note, deleteNote, updateNote }) => {
       {note.map((item, key) => {
         return (
           <div className="app__note col-sm-3 p-xxl-3 p-xl-2 p-lg-3 p-2" key={key}>
-            <div className="card shadow-sm rounded-4 border-1" style={{backgroundColor: `${item.colorNote ==="" ? "#fff" : item.colorNote}`}}>
+            <div className="card shadow-sm rounded-4 border-1" style={{backgroundColor: `${item.noteColor ==="" ? "#fff" : item.noteColor}`}}>
               <div className="card-body">
                 <h5 className="card-title">{item.noteTitle}</h5>
                 <hr />
@@ -48,7 +48,7 @@ const Note = ({ note, deleteNote, updateNote }) => {
                       data-bs-toggle="modal"
                       data-bs-target="#noteModal"
                       onClick={() =>
-                        updateNote(item.id, item.noteTitle, item.noteText)
+                        updateNote(item.id, item.noteTitle, item.noteText, item.noteColor)
                       }
                       className="edit"
                     >

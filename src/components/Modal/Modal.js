@@ -1,6 +1,6 @@
 import React from "react";
 
-const Modal = ({ noteTitle, noteText, handleInput,handleColorInput, saveNote, toggle }) => {
+const Modal = ({ note, handleInput,handleColorInput, saveNote, toggle }) => {
   const colors = ["#fab1a0","#ffeaa7","#74b9ff","#a29bfe","#55efc4","#dfe6e9"]
   return (
     <div
@@ -34,7 +34,7 @@ const Modal = ({ noteTitle, noteText, handleInput,handleColorInput, saveNote, to
                   className="form-control"
                   id="title-name"
                   name="noteTitle"
-                  value={noteTitle}
+                  value={note.noteTitle}
                   onChange={handleInput}
                 />
               </div>
@@ -46,7 +46,7 @@ const Modal = ({ noteTitle, noteText, handleInput,handleColorInput, saveNote, to
                   className="form-control"
                   id="message-text"
                   name="noteText"
-                  value={noteText}
+                  value={note.noteText}
                   onChange={handleInput}
                 ></textarea>
               </div>
@@ -58,8 +58,8 @@ const Modal = ({ noteTitle, noteText, handleInput,handleColorInput, saveNote, to
            {colors.map((item,key) => {
             return (
               <li className="color-btn" key={key} style={{backgroundColor: item}}>
-              <input type="radio" name="noteColor" onClick={(e) => handleColorInput(item)}/>
-              <span className="checkmark"></span>
+              <input type="radio" name="noteColor" value={item} onClick={(e) => handleColorInput(e.target.value)}/>
+              <span className={note.noteColor !== item ? "checkmark" : "checkmark active"}></span>
               </li>
             )
            })}
