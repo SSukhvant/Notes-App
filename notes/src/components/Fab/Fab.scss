@@ -1,0 +1,13 @@
+.fab{
+    position: fixed;
+    bottom: 4%;
+    right: 4%;
+    border: none;
+    height: 3rem;
+    width: 3rem;
+    border-radius: 50%;
+    line-height: 0;
+    @media screen and (min-width: 992px) {
+        display: none;
+      }
+}
