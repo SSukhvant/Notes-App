@@ -1,7 +1,7 @@
 import React from 'react'
 import './Fab.scss'
 
-const Fab = ({setToggle, setNote}) => {
+const Fab = ({setToggle, setAddNote}) => {
   return (
     <button
     type="button"
@@ -10,7 +10,7 @@ const Fab = ({setToggle, setNote}) => {
     data-bs-target="#noteModal"
     onClick={() => {
       setToggle(false);
-      setNote({ noteTitle: "", noteText: "", noteColor:"" });
+      setAddNote({ title: "", note: "", color:"" });
     }}
   >
     <i className="fi fi-br-plus"></i>

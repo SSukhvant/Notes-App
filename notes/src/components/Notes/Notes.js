@@ -1,165 +1,138 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import Fab from "../Fab/Fab";
 import Header from "../Header/Header";
 import Modal from "../Modal/Modal";
 import Note from "../Note/Note";
 import "./Notes.scss";
 
-const getLocalData = () => {
-  let localNote = localStorage.getItem("localNotes");
-  if (localNote) {
-    return JSON.parse(localStorage.getItem("localNotes"));
-  } else {
-    return [];
-  }
-};
+axios.defaults.baseURL = process.env.BASE_URL || "http://localhost:3001";
 
 const Notes = () => {
-  const [note, setNote] = useState({
-    noteTitle: "",
-    noteText: "",
-    time: "",
-    noteColor:""
+  const [addNote, setAddNote] = useState({
+    title: "",
+    note: "",
+    color: "",
   });
-  const [notesData, setNotesData] = useState(getLocalData());
+
   const [toggle, setToggle] = useState(false);
+  const [data, setData] = useState();
   const [isId, setIsId] = useState();
-  const [searchNote, setSearchNote] = useState(notesData);
-  const [search, setSearch] = useState("");
-  // const [color, setColor] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    searchNotes();
+  }, [searchQuery]);
+
+  const handleSearchInputChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const searchNotes = async () => {
+    try {
+      const response = await axios.get(`/search?q=${searchQuery}`);
+      setData(response.data.data);
+    } catch (error) {
+      console.error("Error searching notes:", error);
+    }
+  };
 
   const handleInput = (event) => {
     const { name, value } = event.target;
-    setNote({ ...note, [name]: value });
+    setAddNote({ ...addNote, [name]: value });
   };
 
   const handleColorInput = (val) => {
-    setNote({...note, noteColor: val});
-  }
-
-  const handleSearch = (value) => {
-    setSearch(value);
-    filterNote(value);
+    setAddNote({ ...addNote, color: val });
   };
-  const filterNote = (value) => {
-    const lowerCaseValue = value.toLowerCase().trim();
-    if (!lowerCaseValue) {
-      setSearchNote(notesData);
-    } else {
-      const filteredData = notesData.filter((item) => {
-        return Object.keys(item).some((key) => {
-          return item[key].toString().toLowerCase().includes(lowerCaseValue);
-        });
-      });
-      setSearchNote(filteredData);
+
+  const saveNote = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("/insert", addNote);
+      getData();
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error while saving the note:", error);
     }
   };
 
-  const saveNote = () => {
-    const allNotes = {
-      id: Date.now() + "" + Math.floor(Math.random() * 78),
-      noteTitle: note.noteTitle,
-      noteText: note.noteText,
-      noteTime: Date.now(),
-      noteColor: note.noteColor
-    };
-    if (!note) {
-    } else if (note && toggle === true) {
-      // setNotesData(
-      //   notesData.map((elem) => {
-      //     if (elem.id === isId) {
-      //       return {
-      //         ...notesData,
-      //         noteTitle: note.noteTitle,
-      //         noteText: note.noteText,
-      //         noteTime: note.time,
-      //         noteColor: note.noteColor
-      //       };
-      //     }
-      //     return elem;
-      //   })
-      // );
-      let items = [...notesData];
-      let item = items[isId]
-      console.log(item)
-      item.noteTitle = note.noteTitle
-      item.noteText = note.noteText
-      item.Time = note.time
-      item.noteColor = note.noteColor
-      items[isId] = item
-      setNotesData(items)
-      setNote({
-        noteTitle: "",
-        noteText: "",
-        noteTime: "",
-        noteColor:"",
-      }); 
-      setIsId(null);
-    } else {
-      setNotesData([...notesData, allNotes]);
-      setNote({
-        noteTitle: "",
-        noteText: "",
-        noteTime: "",
-        noteColor: ""
+  const updateNote = (id, title, note, color) => {
+    setToggle(true);
+    setAddNote({
+      title: title,
+      note: note,
+      color: color,
+    });
+    setIsId(id);
+  };
+
+  const updateExistingNote = () => {
+    axios
+      .put(`/update/${isId}`, addNote)
+      .then((response) => {
+        if (response.data.success) {
+          setToggle(false);
+          getData();
+          console.log("Note updated successfully");
+        } else {
+          console.log("Note update failed");
+        }
+      })
+      .catch((err) => {
+        console.log("Error updating note:", err);
       });
-    }
   };
 
   const deleteNote = (id) => {
-    const tempDeleteNotes = [...notesData];
-
-    const deleteIndex = tempDeleteNotes.findIndex((item) => item.id === id);
-    if (deleteIndex < 0) return;
-
-    tempDeleteNotes.splice(deleteIndex, 1);
-    setNotesData(tempDeleteNotes);
+    axios
+      .delete(`/delete/${id}`)
+      .then((response) => {
+        if (response.data.success) {
+          getData();
+          console.log("Note deleted successfully");
+        } else {
+          console.log("Note deletion failed");
+        }
+      })
+      .catch((err) => {
+        console.log("Error deleting note:", err);
+      });
   };
 
-  const updateNote = (id, noteTitle, noteText, noteColor) => {
-    setToggle(true);
-    setIsId(id);
-    setNote({ noteTitle: noteTitle, noteText: noteText, time: Date.now(), noteColor: noteColor });
-    let tempUpdateNotes = [...notesData];
-    const index = tempUpdateNotes.findIndex((i) => i.id === id);
-    if (index < 0) return;
-    setIsId(index)
+  const getData = () => {
+    try {
+      axios.get("/read").then((response) => {
+        setData(response.data.data);
+      });
+    } catch (error) {
+      console.error("Error while saving the note:", error);
+    }
   };
 
   useEffect(() => {
-    localStorage.setItem("localNotes", JSON.stringify(notesData));
-  }, [notesData]);
+    getData();
+  }, []);
 
   return (
     <section className="app container-sm">
       <Header
-        search={search}
-        setNote={setNote}
+        searchQuery={searchQuery}
+        handleSearchInputChange={handleSearchInputChange}
+        setAddNote={setAddNote}
         setToggle={setToggle}
-        handleSearch={handleSearch}
       />
 
       <Modal
-        note={note}
+        addNote={addNote}
         handleInput={handleInput}
         handleColorInput={handleColorInput}
         saveNote={saveNote}
+        updateExistingNote={updateExistingNote}
         toggle={toggle}
       />
-      {search ? (
-        <Note
-          note={searchNote}
-          deleteNote={deleteNote}
-          updateNote={updateNote}
-        />
-      ) : (
-        <Note
-          note={notesData}
-          deleteNote={deleteNote}
-          updateNote={updateNote}
-        />
-      )}
-      <Fab setToggle={setToggle} setNote={setNote} />
+      <Note data={data} updateNote={updateNote} deleteNote={deleteNote} />
+      <Fab setToggle={setToggle} setAddNote={setAddNote} />
     </section>
   );
 };

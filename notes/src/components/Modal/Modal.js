@@ -1,7 +1,22 @@
-import React from "react";
+import "./Modal.scss";
 
-const Modal = ({ note, handleInput,handleColorInput, saveNote, toggle }) => {
-  const colors = ["#fab1a0","#ffeaa7","#74b9ff","#a29bfe","#55efc4","#dfe6e9"]
+const Modal = ({
+  addNote,
+  handleInput,
+  handleColorInput,
+  updateExistingNote,
+  saveNote,
+  toggle,
+}) => {
+  const colors = [
+    "#fab1a0",
+    "#ffeaa7",
+    "#74b9ff",
+    "#a29bfe",
+    "#55efc4",
+    "#dfe6e9",
+  ];
+
   return (
     <div
       className="modal fade"
@@ -31,43 +46,61 @@ const Modal = ({ note, handleInput,handleColorInput, saveNote, toggle }) => {
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control no-outline"
                   id="title-name"
-                  name="noteTitle"
-                  value={note.noteTitle}
+                  name="title"
+                  placeholder="Title"
+                  value={addNote.title}
                   onChange={handleInput}
                 />
               </div>
               <div className="mb-3">
                 <label htmlFor="message-text" className="col-form-label">
-                  Take a note...
+                  Take a note
                 </label>
                 <textarea
-                  className="form-control"
+                  className="form-control no-outline"
                   id="message-text"
-                  name="noteText"
-                  value={note.noteText}
+                  name="note"
+                  placeholder="Take a note..."
+                  rows={7}
+                  value={addNote.note}
                   onChange={handleInput}
                 ></textarea>
               </div>
             </div>
           </div>
           <div className="modal-footer d-flex justify-content-between align-items-center">
-          <div className="color-btns">
-           <ul>
-           {colors.map((item,key) => {
-            return (
-              <li className="color-btn" key={key} style={{backgroundColor: item}}>
-              <input type="radio" name="noteColor" value={item} onClick={(e) => handleColorInput(e.target.value)}/>
-              <span className={note.noteColor !== item ? "checkmark" : "checkmark active"}></span>
-              </li>
-            )
-           })}
-           </ul>
-          </div>
+            <div className="color-btns">
+              <ul>
+                {colors.map((item, key) => {
+                  return (
+                    <li
+                      className="color-btn"
+                      key={key}
+                      style={{ backgroundColor: item }}
+                    >
+                      <input
+                        type="radio"
+                        name="color"
+                        value={item}
+                        onClick={(e) => handleColorInput(e.target.value)}
+                      />
+                      <span
+                        className={
+                          addNote.color !== item
+                            ? "checkmark"
+                            : "checkmark active"
+                        }
+                      ></span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
             <button
               type="button"
-              onClick={saveNote}
+              onClick={toggle ? () => updateExistingNote() : saveNote}
               data-bs-dismiss="modal"
               aria-label="Close"
               className="btn btn-warning text-white"
