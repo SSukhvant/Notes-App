@@ -7,7 +7,7 @@ import Note from "../Note/Note";
 import "./Notes.scss";
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = "http://keepnotes.ap-south-1.elasticbeanstalk.com";
+axios.defaults.baseURL = "https://notes-api-omega.vercel.app";
 
 const Notes = () => {
   const [addNote, setAddNote] = useState({
