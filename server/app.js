@@ -5,7 +5,13 @@ const app = express();
 const cors = require("cors");
 const NotesModel = require("./model/NotesModel");
 
-app.use(cors());
+app.use(cors(
+  {
+    origin: ["https://s-notes-app.netlify.app"],
+    methods: ["POST", "GET", "PUT", "DELETE"],
+    credentials: true
+  }
+));
 app.use(express.json());
 const PORT = process.env.PORT || 3001;
 
