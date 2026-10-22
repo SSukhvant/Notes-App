@@ -160,7 +160,7 @@ const Notes = () => {
   }
 
   return (
-    <section className="app container-sm">
+    <section className="app">
       <Header searchQuery={searchQuery} handleSearchInputChange={(event) => setSearchQuery(event.target.value)} setToggle={setToggle} setAddNote={setAddNote} user={user} onSignOut={signOut} />
       <div className="notes-toolbar"><div><p className="eyebrow">YOUR WORKSPACE</p><h1>Your notes<span className="notes-count">{data.length}</span></h1><p className="notes-description">A home for everything on your mind.</p></div><button type="button" className="new-note-button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}><span>＋</span> New note</button></div>
       {notice && <p className="app-notice" role="status">{notice}</p>}
