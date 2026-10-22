@@ -7,7 +7,7 @@ import Note from "../Note/Note";
 import "./Notes.scss";
 
 const api = axios.create({
-  baseURL: (process.env.REACT_APP_API_URL || "").trim().replace(/\/+$/, ""),
+  baseURL: (process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "")).trim().replace(/\/+$/, ""),
   timeout: 15000,
 });
 const tokenKey = "keep-notes-session";
@@ -85,7 +85,7 @@ const Notes = () => {
       setToken(response.data.token);
       setAuthForm({ name: "", email: "", password: "" });
     } catch (err) {
-      setAuthError(err.response?.data?.message || "Unable to sign in right now. Please try again.");
+      setAuthError(err.response?.data?.message || (err.code === "ERR_NETWORK" || !err.response ? "Cannot reach the authentication API. Check that the backend is deployed and REACT_APP_API_URL and CLIENT_ORIGIN are configured correctly." : "Unable to sign in right now. Please try again."));
     } finally {
       setAuthBusy(false);
     }
