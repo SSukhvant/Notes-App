@@ -17,7 +17,7 @@ function invokeAuth(header) {
 
 test("rejects requests without a bearer token", () => {
   const { res, nextCalled } = invokeAuth(undefined);
-  assert.equal(res.statusCode, 503);
+  assert.equal(res.statusCode, 401);
   assert.equal(nextCalled, false);
 });
 
@@ -32,6 +32,6 @@ test("fails closed when the session secret is not configured", () => {
   delete process.env.JWT_SECRET;
   const { res, nextCalled } = invokeAuth("Bearer abc.def");
   if (original !== undefined) process.env.JWT_SECRET = original;
-  assert.equal(res.statusCode, 401);
+  assert.equal(res.statusCode, 503);
   assert.equal(nextCalled, false);
 });
