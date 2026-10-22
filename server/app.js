@@ -33,6 +33,7 @@ function rateLimit({ windowMs, limit }) {
   };
 }
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
+const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
 // Vercel imports this module as a serverless handler, so the local start()
 // function does not run there. Ensure MongoDB is connected before any route
@@ -56,7 +57,6 @@ app.use(asyncRoute(async (req, res, next) => {
   next();
 }));
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10 });
-const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 const validId = (id) => mongoose.isValidObjectId(id);
 const clean = (value, max) => typeof value === "string" ? value.trim().slice(0, max) : "";
 const hashPassword = (password, salt = crypto.randomBytes(16).toString("hex")) => new Promise((resolve, reject) => {
