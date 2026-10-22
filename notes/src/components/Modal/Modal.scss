@@ -1,3 +1,25 @@
 input.no-outline:focus {
     outline: none !important;
   }
+.note-editor { overflow: hidden; border: 1px solid #e8e9e3; border-radius: 20px; background: #fffdf8; box-shadow: 0 30px 90px #171b1428; }
+.note-editor .modal-header { align-items: flex-start; padding: 27px 30px 20px; border-bottom: 1px solid #eeeee8; }
+.note-editor .modal-title { font: 800 25px/1.2 Manrope, sans-serif; letter-spacing: -1px; color: #20231f; }
+.editor-eyebrow { margin: 0 0 8px; color: #7c8e6c; font-size: 9px; font-weight: 700; letter-spacing: 1.8px; }
+.note-editor .modal-body { padding: 24px 30px 28px; }
+.editor-label { display: block; margin-bottom: 9px; color: #5f645a; font-size: 11px; font-weight: 700; }
+.note-title-input, .note-body-input { border: 1px solid #e5e6de; border-radius: 10px; background: #fff; box-shadow: none !important; color: #242820; font: 13px/1.7 "DM Sans", sans-serif; }
+.note-title-input { min-height: 47px; font-weight: 600; }
+.note-body-input { resize: vertical; min-height: 170px; }
+.note-title-input:focus, .note-body-input:focus { border-color: #94b078; outline: 3px solid #b9ef7630; }
+.editor-color-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 23px; }
+.editor-color-row .editor-label { margin: 0; }
+.color-options { display: flex; gap: 8px; flex-wrap: wrap; }
+.color-option { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid #2428201f; border-radius: 50%; color: #27321f; font-size: 12px; }
+.color-option.selected { outline: 2px solid #64864b; outline-offset: 2px; }
+.note-editor .modal-footer { justify-content: space-between; gap: 15px; padding: 17px 30px; border-top: 1px solid #eeeee8; }
+.editor-hint { color: #85897f; font-size: 10px; }
+.editor-save-button { border: 0; border-radius: 10px; background: #20231f; color: white; padding: 12px 16px; font-size: 11px; font-weight: 700; }
+.editor-save-button:hover { background: #38432f; }
+.editor-save-button:disabled { cursor: wait; opacity: .6; }
+.editor-error { margin: 14px 0 0; color: #8b3526; font-size: 12px; }
+@media (max-width: 575px) { .note-editor .modal-header, .note-editor .modal-body { padding-right: 20px; padding-left: 20px; } .note-editor .modal-footer { align-items: stretch; flex-direction: column; padding: 15px 20px; } .editor-save-button { width: 100%; } }
