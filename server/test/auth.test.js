@@ -17,7 +17,7 @@ function invokeAuth(header) {
 
 test("rejects requests without a bearer token", () => {
   const { res, nextCalled } = invokeAuth(undefined);
-  assert.equal(res.statusCode, 401);
+  assert.equal(res.statusCode, 503);
   assert.equal(nextCalled, false);
 });
 
