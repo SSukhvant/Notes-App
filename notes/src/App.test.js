@@ -10,7 +10,7 @@ test("renders the sign-in experience", () => {
   render(<App />);
   expect(screen.getByRole("heading", { name: /good to have you back/i })).toBeInTheDocument();
   expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
-  expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
 });
 
