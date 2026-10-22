@@ -125,7 +125,7 @@ const Notes = () => {
   };
 
   const deleteNote = async (id) => {
-    if (!window.confirm("Move this note to deletion? This action cannot be undone.")) return;
+    if (!window.confirm("Delete this note permanently? This action cannot be undone.")) return;
     try {
       await request.delete(`/delete/${id}`);
       setNotice("Note deleted");
