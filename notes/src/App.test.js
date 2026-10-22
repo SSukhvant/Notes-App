@@ -1,9 +1,45 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
-test('renders learn react link', () => {
+jest.mock("axios", () => {
+  const createClient = () => ({
+    defaults: {
+      baseURL: "http://localhost:3001",
+      headers: { common: {} },
+    },
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+  });
+
+  return {
+    __esModule: true,
+    default: {
+      create: jest.fn(createClient),
+    },
+  };
+});
+
+import App from "./App";
+
+beforeEach(() => {
+  sessionStorage.clear();
+});
+
+test("renders the sign-in experience", () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /good to have you back/i })).toBeInTheDocument();
+  expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+});
+
+test("allows a visitor to switch to account registration", () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: /create account/i }));
+  expect(screen.getByRole("heading", { name: /make room for your thoughts/i })).toBeInTheDocument();
+  expect(screen.getByLabelText(/your name/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/password/i)).toHaveAttribute("minLength", "12");
 });
