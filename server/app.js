@@ -33,6 +33,28 @@ function rateLimit({ windowMs, limit }) {
   };
 }
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
+
+// Vercel imports this module as a serverless handler, so the local start()
+// function does not run there. Ensure MongoDB is connected before any route
+// accesses a model, while reusing the connection across warm invocations.
+let mongoConnectionPromise;
+async function ensureMongoConnection() {
+  if (mongoose.connection.readyState === 1) return;
+  if (!process.env.MONGO_URL) throw new Error("MONGO_URL is required.");
+  if (!mongoConnectionPromise) {
+    mongoConnectionPromise = mongoose.connect(process.env.MONGO_URL, {
+      serverSelectionTimeoutMS: 10000,
+    }).catch((error) => {
+      mongoConnectionPromise = undefined;
+      throw error;
+    });
+  }
+  await mongoConnectionPromise;
+}
+app.use(asyncRoute(async (req, res, next) => {
+  await ensureMongoConnection();
+  next();
+}));
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10 });
 const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 const validId = (id) => mongoose.isValidObjectId(id);
