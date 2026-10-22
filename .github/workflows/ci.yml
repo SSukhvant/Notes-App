@@ -40,3 +40,4 @@ jobs:
       - run: npm ci
       - run: node --check app.js
       - run: node --check middleware/auth.js
+      - run: npm test
