@@ -25,6 +25,9 @@ jobs:
       - run: npm run build
         env:
           CI: false
+      - run: npm test -- --watchAll=false
+        env:
+          CI: true
   backend:
     runs-on: ubuntu-latest
     defaults:
