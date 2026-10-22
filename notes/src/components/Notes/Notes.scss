@@ -28,7 +28,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .account-name { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; }
 .sign-out-button { border: 0; background: transparent; color: var(--muted); font-size: 12px; padding: 8px; }
 .header-add-note { display: none; border: 0; border-radius: 12px; width: 40px; height: 40px; background: var(--green); font-size: 25px; }
-.notes-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding: 50px 0 24px; }
+.notes-toolbar { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; padding: 50px 0 24px; }
 .eyebrow { margin: 0 0 9px; font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #7b8b6a; }
 .notes-toolbar h1 { margin: 0; font: 800 clamp(30px, 4vw, 42px)/1.1 Manrope, sans-serif; letter-spacing: -2px; }
 .notes-count { display: inline-grid; place-items: center; vertical-align: middle; margin-left: 12px; min-width: 27px; height: 27px; padding: 0 7px; border-radius: 20px; background: #e9eddf; color: #59664b; font: 600 12px "DM Sans", sans-serif; letter-spacing: 0; }
