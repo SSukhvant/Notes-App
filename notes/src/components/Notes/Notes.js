@@ -166,7 +166,7 @@ const Notes = () => {
       {notice && <p className="app-notice" role="status">{notice}</p>}
       {error && <div className="app-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
       {loading ? <div className="notes-state"><span className="loading-dot"/> Gathering your notes…</div> : data.length === 0 ? <div className="notes-empty"><span className="empty-icon">✳</span><h2>{searchQuery ? "Nothing found just yet" : "A fresh page."}</h2><p>{searchQuery ? "Try another search or a shorter phrase." : "Every good idea starts somewhere. Create your first note."}</p>{!searchQuery && <button type="button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}>Create your first note <span>↗</span></button>}</div> : <Note data={data} updateNote={updateNote} deleteNote={deleteNote} />}
-      <Modal addNote={addNote} handleInput={handleInput} handleColorInput={handleColorInput} saveNote={saveNote} updateExistingNote={saveNote} toggle={toggle} saving={saveBusy} />
+      <Modal addNote={addNote} handleInput={handleInput} handleColorInput={handleColorInput} saveNote={saveNote} updateExistingNote={saveNote} toggle={toggle} saving={saveBusy} error={error} />
       <Fab setToggle={setToggle} setAddNote={(value) => { setAddNote(value); setIsId(""); }} />
     </section>
   );
