@@ -1,13 +1,10 @@
-import { useState } from "react";
 import { Modal as BootstrapModal } from "bootstrap";
 import "./Modal.scss";
 
 const COLORS = ["#ffffff", "#fab1a0", "#ffeaa7", "#74b9ff", "#a29bfe", "#55efc4", "#dfe6e9"];
 
-const Modal = ({ addNote, handleInput, handleColorInput, updateExistingNote, saveNote, toggle, saving = false }) => {
-  const [localError, setLocalError] = useState("");
+const Modal = ({ addNote, handleInput, handleColorInput, updateExistingNote, saveNote, toggle, saving = false, error = "" }) => {
   const submit = async () => {
-    setLocalError("");
     const result = await (toggle ? updateExistingNote() : saveNote());
     if (result) {
       BootstrapModal.getInstance(document.getElementById("noteModal"))?.hide();
@@ -30,7 +27,7 @@ const Modal = ({ addNote, handleInput, handleColorInput, updateExistingNote, sav
             <div className="editor-color-row"><span className="editor-label">Paper color</span><div className="color-options" role="radiogroup" aria-label="Note color">
               {COLORS.map((color) => <button key={color} type="button" role="radio" aria-checked={(addNote.color || "#ffffff") === color} aria-label={color === "#ffffff" ? "White" : `Color ${color}`} className={`color-option ${(addNote.color || "#ffffff") === color ? "selected" : ""}`} style={{ backgroundColor: color }} onClick={() => handleColorInput(color)}><span>{(addNote.color || "#ffffff") === color ? "✓" : ""}</span></button>)}
             </div></div>
-            {localError && <p className="editor-error" role="alert">{localError}</p>}
+            {error && <p className="editor-error" role="alert">{error}</p>}
           </div>
           <div className="modal-footer">
             <span className="editor-hint">Your notes are saved to your private workspace.</span>
