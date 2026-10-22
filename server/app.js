@@ -3,7 +3,6 @@ const crypto = require("node:crypto");
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const rateLimit = require("express-rate-limit");
 const NotesModel = require("./model/NotesModel");
 const UserModel = require("./model/UserModel");
 const requireAuth = require("./middleware/auth");
@@ -16,9 +15,19 @@ const COLORS = new Set(["#fab1a0", "#ffeaa7", "#74b9ff", "#a29bfe", "#55efc4", "
 app.disable("x-powered-by");
 app.use(cors({ origin: CLIENT_ORIGIN, methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], allowedHeaders: ["Content-Type", "Authorization"] }));
 app.use(express.json({ limit: "32kb" }));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: "draft-7", legacyHeaders: false }));
-
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: "draft-7", legacyHeaders: false });
+const rateBuckets = new Map();
+function rateLimit({ windowMs, limit }) {
+  return (req, res, next) => {
+    const key = req.ip + ":" + req.path;
+    const now = Date.now();
+    const bucket = rateBuckets.get(key);
+    if (!bucket || now - bucket.startedAt >= windowMs) rateBuckets.set(key, { startedAt: now, count: 1 });
+    else if (++bucket.count > limit) return res.status(429).json({ success: false, message: "Too many requests. Try again later." });
+    next();
+  };
+}
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10 });
 const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 const validId = (id) => mongoose.isValidObjectId(id);
 const clean = (value, max) => typeof value === "string" ? value.trim().slice(0, max) : "";
