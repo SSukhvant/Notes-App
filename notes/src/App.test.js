@@ -1,5 +1,26 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
+
+jest.mock("axios", () => {
+  const createClient = () => ({
+    defaults: {
+      baseURL: "http://localhost:3001",
+      headers: { common: {} },
+    },
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+  });
+
+  return {
+    __esModule: true,
+    default: {
+      create: jest.fn(createClient),
+    },
+  };
+});
+
 import App from "./App";
 
 beforeEach(() => {
@@ -20,5 +41,5 @@ test("allows a visitor to switch to account registration", () => {
   expect(screen.getByRole("heading", { name: /make room for your thoughts/i })).toBeInTheDocument();
   expect(screen.getByLabelText(/your name/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
-  expect(screen.getByLabelText(/^password$/i)).toHaveAttribute("minLength", "12");
+  expect(screen.getByLabelText(/password/i)).toHaveAttribute("minLength", "12");
 });
