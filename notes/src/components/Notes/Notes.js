@@ -109,8 +109,10 @@ const Notes = () => {
       window.setTimeout(() => setNotice(""), 2500);
       resetEditor();
       await loadNotes();
+      return true;
     } catch (err) {
       setError(err.response?.data?.message || "Your note couldn't be saved. Your changes are still here.");
+      return false;
     } finally {
       setSaveBusy(false);
     }
