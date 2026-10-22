@@ -7,10 +7,11 @@ import Note from "../Note/Note";
 import "./Notes.scss";
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:3001",
+  baseURL: (process.env.REACT_APP_API_URL || "").trim().replace(/\\/$/, ""),
   timeout: 15000,
 });
 const tokenKey = "keep-notes-session";
+const apiConfigured = Boolean(api.defaults.baseURL);
 
 const Notes = () => {
   const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) || "");
@@ -43,7 +44,7 @@ const Notes = () => {
   }, []);
 
   const loadNotes = useCallback(async (query = searchQuery) => {
-    if (!token) return;
+    if (!token || !apiConfigured) return;
     setLoading(true);
     setError("");
     try {
@@ -70,6 +71,10 @@ const Notes = () => {
 
   const submitAuth = async (event) => {
     event.preventDefault();
+    if (!apiConfigured) {
+      setAuthError("Authentication service is not configured. Please set REACT_APP_API_URL to your deployed API URL.");
+      return;
+    }
     setAuthBusy(true);
     setAuthError("");
     try {
@@ -144,6 +149,7 @@ const Notes = () => {
           <p className="eyebrow">YOUR SPACE, IN FOCUS</p>
           <h1 id="auth-title">{authMode === "register" ? "Make room for your thoughts." : "Good to have you back."}</h1>
           <p className="auth-subtitle">A calmer place to capture ideas, keep plans, and find what matters.</p>
+          {!apiConfigured && <p className="auth-error" role="alert">The API URL is missing. Configure REACT_APP_API_URL in your frontend deployment and rebuild.</p> }
           <form className="auth-form" onSubmit={submitAuth}>
             {authMode === "register" && <label>Your name<input autoComplete="name" value={authForm.name} onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })} minLength={2} maxLength={80} required /></label>}
             <label>Email address<input type="email" autoComplete="email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} required /></label>
