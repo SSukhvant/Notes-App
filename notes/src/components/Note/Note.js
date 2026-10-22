@@ -26,16 +26,16 @@ const Note = ({ data, deleteNote, updateNote }) => {
     let day = date.getDate();
     const month = monthNames[date.getMonth()];
 
-    return `${hrs}:${min} ${day} ${month}`;
+    return `${String(hrs).padStart(2, "0")}:${String(min).padStart(2, "0")} · ${day} ${month}`;
   };
   return (
     <div className="app__notes row p-2 p-lg-3 mt-5 rounded bg-light">
       {data &&
-        data.map((item, key) => {
+        data.map((item) => {
           return (
             <div
               className="app__note col-sm-3 p-xxl-3 p-xl-2 p-lg-3 p-2"
-              key={key}
+              key={item._id}
             >
               <div
                 className="card shadow rounded border-0"
@@ -65,6 +65,7 @@ const Note = ({ data, deleteNote, updateNote }) => {
                           )
                         }
                         className="edit"
+                        aria-label={`Edit ${item.title}`}
                       >
                         <i className="fi fi-rr-pencil"></i>
                       </button>
@@ -72,6 +73,7 @@ const Note = ({ data, deleteNote, updateNote }) => {
                         type="button"
                         onClick={() => deleteNote(item._id)}
                         className="delete"
+                        aria-label={`Delete ${item.title}`}
                       >
                         <i className="fi fi-rr-trash"></i>
                       </button>
