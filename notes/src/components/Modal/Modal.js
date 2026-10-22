@@ -1,4 +1,3 @@
-import { Modal as BootstrapModal } from "bootstrap";
 import "./Modal.scss";
 
 const COLORS = ["#ffffff", "#fab1a0", "#ffeaa7", "#74b9ff", "#a29bfe", "#55efc4", "#dfe6e9"];
@@ -7,7 +6,7 @@ const Modal = ({ addNote, handleInput, handleColorInput, updateExistingNote, sav
   const submit = async () => {
     const result = await (toggle ? updateExistingNote() : saveNote());
     if (result) {
-      BootstrapModal.getInstance(document.getElementById("noteModal"))?.hide();
+      document.querySelector("#noteModal [data-bs-dismiss=\"modal\"]")?.click();
     }
   };
 
