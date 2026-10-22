@@ -9,11 +9,17 @@ const requireAuth = require("./middleware/auth");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:3000";
+const CLIENT_ORIGINS = [...new Set([
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://s-notes-app.netlify.app",
+  ...(process.env.CLIENT_ORIGIN || "").split(","),
+  ...(process.env.CLIENT_ORIGINS || "").split(","),
+].map((origin) => origin.trim().replace(/\/+$/, "")).filter(Boolean))];
 const COLORS = new Set(["#fab1a0", "#ffeaa7", "#74b9ff", "#a29bfe", "#55efc4", "#dfe6e9", "#ffffff"]);
 
 app.disable("x-powered-by");
-app.use(cors({ origin: CLIENT_ORIGIN, methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], allowedHeaders: ["Content-Type", "Authorization"] }));
+app.use(cors({ origin(origin, callback) { if (!origin || CLIENT_ORIGINS.includes(origin.replace(/\/+$/, ""))) return callback(null, true); return callback(new Error("Origin is not allowed by CORS.")); }, methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], allowedHeaders: ["Content-Type", "Authorization"] }));
 app.use(express.json({ limit: "32kb" }));
 const rateBuckets = new Map();
 function rateLimit({ windowMs, limit }) {
