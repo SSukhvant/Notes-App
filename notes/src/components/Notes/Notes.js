@@ -7,7 +7,7 @@ import Note from "../Note/Note";
 import "./Notes.scss";
 
 const api = axios.create({
-  baseURL: (process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "https://notes-api-omega.vercel.app")).trim().replace(/\/+$/, ""),
+  baseURL: (process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "https://notes-app-api-lac.vercel.app")).trim().replace(/\/+$/, ""),
   timeout: 15000,
 });
 const tokenKey = "keep-notes-session";
