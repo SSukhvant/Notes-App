@@ -25,6 +25,7 @@ import App from "./App";
 
 beforeEach(() => {
   sessionStorage.clear();
+  localStorage.removeItem("keep-notes-theme");
 });
 
 test("renders the sign-in experience", () => {
@@ -42,4 +43,15 @@ test("allows a visitor to switch to account registration", () => {
   expect(screen.getByLabelText(/your name/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/password/i)).toHaveAttribute("minLength", "12");
+});
+
+test("persists the selected appearance mode", () => {
+  const { unmount } = render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: /switch to dark mode/i }));
+  expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+  expect(localStorage.getItem("keep-notes-theme")).toBe("dark");
+  unmount();
+
+  render(<App />);
+  expect(screen.getByRole("button", { name: /switch to light mode/i })).toBeInTheDocument();
 });

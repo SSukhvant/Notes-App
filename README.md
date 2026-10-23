@@ -20,15 +20,17 @@ A focused, responsive notes workspace built with React and an Express/MongoDB AP
 
 ## Run locally
 
-Prerequisites: Node.js 20+, npm, and a MongoDB instance.
+Prerequisites: Node.js 20+, npm, and a running MongoDB instance.
 
-1. Copy `server/.env.example` to `server/.env`.
+1. Copy `server/.env.example` to `server/.env.local` (or `server/.env`).
 2. Set `MONGO_URL` to a private development database and `JWT_SECRET` to a cryptographically random secret of at least 32 characters.
-3. From `server/`, run `npm ci` and `npm run dev`.
-4. Copy `notes/.env.example` to `notes/.env`.
-5. From `notes/`, run `npm ci` and `npm start`.
+3. Start MongoDB at the configured `MONGO_URL` (for a macOS Homebrew install: `brew services start mongodb-community@8.0`).
+4. In one terminal, from `server/`, run `npm ci` and `npm run dev`.
+5. Copy `notes/.env.example` to `notes/.env.local` (or `notes/.env`).
+6. In a second terminal, from `notes/`, run `npm ci` and `npm start`.
 
 The frontend runs on `http://localhost:3000` and the API on `http://localhost:3001` by default.
+Keep both development servers running. If the frontend cannot reach the API, confirm the database is running and `cd server && npm run dev` is still serving `/health`.
 
 ## Production configuration
 

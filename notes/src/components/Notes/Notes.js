@@ -12,9 +12,27 @@ const api = axios.create({
 });
 const tokenKey = "keep-notes-session";
 const apiConfigured = Boolean(api.defaults.baseURL);
+const localApi = /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/|$)/i.test(api.defaults.baseURL);
+const themeKey = "keep-notes-theme";
+
+const ThemeToggle = ({ theme, onToggle }) => (
+  <button
+    type="button"
+    className="theme-toggle"
+    onClick={onToggle}
+    aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+    title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+  >
+    <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
+  </button>
+);
 
 const Notes = () => {
   const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) || "");
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem(themeKey);
+    return savedTheme || (window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light");
+  });
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState("login");
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
@@ -26,9 +44,16 @@ const Notes = () => {
   const [data, setData] = useState([]);
   const [isId, setIsId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
+  const [sortMode, setSortMode] = useState("updated");
   const [loading, setLoading] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(themeKey, theme);
+  }, [theme]);
 
   const request = useMemo(() => {
     const instance = axios.create({ baseURL: api.defaults.baseURL, timeout: 15000 });
@@ -85,7 +110,13 @@ const Notes = () => {
       setToken(response.data.token);
       setAuthForm({ name: "", email: "", password: "" });
     } catch (err) {
-      setAuthError(err.response?.data?.message || (err.code === "ERR_NETWORK" || !err.response ? "Cannot reach the authentication API. Check that the backend is deployed and REACT_APP_API_URL and CLIENT_ORIGIN are configured correctly." : "Unable to sign in right now. Please try again."));
+      const networkError = err.code === "ERR_NETWORK" || !err.response;
+      const message = err.response?.data?.message || (networkError
+        ? localApi
+          ? `Cannot reach the local API at ${api.defaults.baseURL}. Make sure MongoDB is running, start the API with \`cd server && npm run dev\`, and confirm CLIENT_ORIGIN matches this frontend.`
+          : "Cannot reach the authentication API. Check that the backend is deployed and REACT_APP_API_URL and CLIENT_ORIGIN are configured correctly."
+        : "Unable to sign in right now. Please try again.");
+      setAuthError(message);
     } finally {
       setAuthBusy(false);
     }
@@ -141,11 +172,22 @@ const Notes = () => {
     }
   };
 
+  const visibleNotes = useMemo(() => {
+    const notes = [...data];
+    if (sortMode === "title") return notes.sort((a, b) => a.title.localeCompare(b.title));
+    if (sortMode === "created-asc") return notes.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    if (sortMode === "created-desc") return notes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return notes.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+  }, [data, sortMode]);
+
   if (!token || !user) {
     return (
-      <main className="auth-shell">
+      <main className="auth-shell" data-theme={theme}>
         <section className="auth-card" aria-labelledby="auth-title">
-          <div className="auth-brand"><span className="auth-mark">K</span><span>keep notes</span></div>
+          <div className="auth-brand-row">
+            <div className="auth-brand"><span className="auth-mark">K</span><span>keep notes</span></div>
+            <ThemeToggle theme={theme} onToggle={() => setTheme((current) => current === "dark" ? "light" : "dark")} />
+          </div>
           <p className="eyebrow">YOUR SPACE, IN FOCUS</p>
           <h1 id="auth-title">{authMode === "register" ? "Make room for your thoughts." : "Good to have you back."}</h1>
           <p className="auth-subtitle">A calmer place to capture ideas, keep plans, and find what matters.</p>
@@ -166,12 +208,29 @@ const Notes = () => {
   }
 
   return (
-    <section className="app">
-      <Header searchQuery={searchQuery} handleSearchInputChange={(event) => setSearchQuery(event.target.value)} setToggle={setToggle} setAddNote={setAddNote} user={user} onSignOut={signOut} />
-      <div className="notes-toolbar"><div><p className="eyebrow">YOUR WORKSPACE</p><h1>Your notes<span className="notes-count">{data.length}</span></h1><p className="notes-description">A home for everything on your mind.</p></div><button type="button" className="new-note-button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}><span>＋</span> New note</button></div>
+    <section className="app" data-theme={theme}>
+      <Header searchQuery={searchQuery} handleSearchInputChange={(event) => setSearchQuery(event.target.value)} setToggle={setToggle} setAddNote={setAddNote} user={user} onSignOut={signOut} theme={theme} onToggleTheme={() => setTheme((current) => current === "dark" ? "light" : "dark")} />
+      <div className="notes-toolbar"><div><p className="eyebrow">YOUR WORKSPACE</p><h1>Your notes<span className="notes-count">{visibleNotes.length}</span></h1><p className="notes-description">A home for everything on your mind.</p></div><button type="button" className="new-note-button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}><span aria-hidden="true">＋</span> New note</button></div>
       {notice && <p className="app-notice" role="status">{notice}</p>}
       {error && <div className="app-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
-      {loading ? <div className="notes-state"><span className="loading-dot"/> Gathering your notes…</div> : data.length === 0 ? <div className="notes-empty"><span className="empty-icon">✳</span><h2>{searchQuery ? "Nothing found just yet" : "A fresh page."}</h2><p>{searchQuery ? "Try another search or a shorter phrase." : "Every good idea starts somewhere. Create your first note."}</p>{!searchQuery && <button type="button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}>Create your first note <span>↗</span></button>}</div> : <Note data={data} updateNote={updateNote} deleteNote={deleteNote} />}
+      <div className="notes-controls">
+        <p className="results-summary" aria-live="polite">{searchQuery ? `${visibleNotes.length} ${visibleNotes.length === 1 ? "result" : "results"}` : `${visibleNotes.length} ${visibleNotes.length === 1 ? "note" : "notes"}`}</p>
+        <div className="notes-control-actions">
+          <label className="sort-control">Sort
+            <select value={sortMode} onChange={(event) => setSortMode(event.target.value)} aria-label="Sort notes">
+              <option value="updated">Recently updated</option>
+              <option value="created-desc">Newest created</option>
+              <option value="created-asc">Oldest created</option>
+              <option value="title">Title A–Z</option>
+            </select>
+          </label>
+          <div className="view-toggle" role="group" aria-label="Notes layout">
+            <button type="button" className={viewMode === "grid" ? "active" : ""} aria-pressed={viewMode === "grid"} aria-label="Grid view" onClick={() => setViewMode("grid")}><span aria-hidden="true">▦</span></button>
+            <button type="button" className={viewMode === "list" ? "active" : ""} aria-pressed={viewMode === "list"} aria-label="List view" onClick={() => setViewMode("list")}><span aria-hidden="true">☰</span></button>
+          </div>
+        </div>
+      </div>
+      {loading ? <div className="notes-state"><span className="loading-dot"/> Gathering your notes…</div> : visibleNotes.length === 0 ? <div className="notes-empty"><span className="empty-icon">✳</span><h2>{searchQuery ? "Nothing found just yet" : "A fresh page."}</h2><p>{searchQuery ? "Try another search or a shorter phrase." : "Every good idea starts somewhere. Create your first note."}</p>{!searchQuery && <button type="button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}>Create your first note <span aria-hidden="true">↗</span></button>}</div> : <Note data={visibleNotes} viewMode={viewMode} updateNote={updateNote} deleteNote={deleteNote} />}
       <Modal addNote={addNote} handleInput={handleInput} handleColorInput={handleColorInput} saveNote={saveNote} updateExistingNote={saveNote} toggle={toggle} saving={saveBusy} error={error} />
       <Fab setToggle={setToggle} setAddNote={(value) => { setAddNote(value); setIsId(""); }} />
     </section>
