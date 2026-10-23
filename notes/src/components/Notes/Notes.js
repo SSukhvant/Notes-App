@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Fab from "../Fab/Fab";
 import Header from "../Header/Header";
@@ -71,6 +71,7 @@ const Notes = () => {
   const [editorError, setEditorError] = useState("");
   const [deleteCandidate, setDeleteCandidate] = useState(null);
   const [deletingId, setDeletingId] = useState("");
+  const validatedSessionToken = useRef("");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -98,6 +99,7 @@ const Notes = () => {
 
   const signOut = useCallback(() => {
     sessionStorage.removeItem(tokenKey);
+    validatedSessionToken.current = "";
     setToken("");
     setSessionStatus("signed-out");
     setUser(null);
@@ -121,16 +123,19 @@ const Notes = () => {
 
   useEffect(() => {
     if (!token) {
+      validatedSessionToken.current = "";
       setSessionStatus("signed-out");
       setUser(null);
       return undefined;
     }
+    if (validatedSessionToken.current === token) return undefined;
 
     let cancelled = false;
     setSessionStatus("checking");
     request.get("/auth/me")
       .then((response) => {
         if (cancelled) return;
+        validatedSessionToken.current = token;
         setUser(response.data.user);
         setAuthError("");
         setSessionStatus("authenticated");
@@ -166,6 +171,7 @@ const Notes = () => {
       const endpoint = authMode === "register" ? "/auth/register" : "/auth/login";
       const response = await api.post(endpoint, authForm);
       sessionStorage.setItem(tokenKey, response.data.token);
+      validatedSessionToken.current = response.data.token;
       setUser(response.data.user);
       setSessionStatus("authenticated");
       setToken(response.data.token);
