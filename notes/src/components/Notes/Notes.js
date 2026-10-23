@@ -15,6 +15,26 @@ const apiConfigured = Boolean(api.defaults.baseURL);
 const localApi = /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/|$)/i.test(api.defaults.baseURL);
 const themeKey = "keep-notes-theme";
 
+const getInitialTheme = () => {
+  let initialTheme = "light";
+  try {
+    const storedTheme = window.localStorage.getItem(themeKey);
+    if (storedTheme === "light" || storedTheme === "dark") {
+      initialTheme = storedTheme;
+    } else if (window.matchMedia?.("(prefers-color-scheme: dark)")?.matches) {
+      initialTheme = "dark";
+    }
+  } catch {
+    if (window.matchMedia?.("(prefers-color-scheme: dark)")?.matches) {
+      initialTheme = "dark";
+    }
+  }
+
+  // Set the theme before React paints to avoid a light/dark flash.
+  document.documentElement.dataset.theme = initialTheme;
+  return initialTheme;
+};
+
 const ThemeToggle = ({ theme, onToggle }) => (
   <button
     type="button"
@@ -29,10 +49,7 @@ const ThemeToggle = ({ theme, onToggle }) => (
 
 const Notes = () => {
   const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) || "");
-  const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem(themeKey);
-    return savedTheme || (window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light");
-  });
+  const [theme, setTheme] = useState(getInitialTheme);
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState("login");
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
@@ -52,7 +69,11 @@ const Notes = () => {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem(themeKey, theme);
+    try {
+      localStorage.setItem(themeKey, theme);
+    } catch {
+      // Theme still works for this session when storage is unavailable.
+    }
   }, [theme]);
 
   const request = useMemo(() => {
@@ -185,7 +206,7 @@ const Notes = () => {
       <main className="auth-shell" data-theme={theme}>
         <section className="auth-card" aria-labelledby="auth-title">
           <div className="auth-brand-row">
-            <div className="auth-brand"><span className="auth-mark">K</span><span>keep notes</span></div>
+            <div className="auth-brand" aria-label="Notes"><img src="/brand-mark.svg" alt="" className="auth-brand-logo" /></div>
             <ThemeToggle theme={theme} onToggle={() => setTheme((current) => current === "dark" ? "light" : "dark")} />
           </div>
           <p className="eyebrow">YOUR SPACE, IN FOCUS</p>
