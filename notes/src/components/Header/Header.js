@@ -2,6 +2,9 @@ import React, { useEffect, useRef } from "react";
 
 const Header = ({ searchQuery, handleSearchInputChange, setToggle, setAddNote, user, onSignOut, theme, onToggleTheme }) => {
   const searchRef = useRef(null);
+  const shortcutLabel = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || "")
+    ? "⌘ K"
+    : "Ctrl K";
 
   useEffect(() => {
     const handleShortcut = (event) => {
@@ -22,7 +25,7 @@ const Header = ({ searchQuery, handleSearchInputChange, setToggle, setAddNote, u
       <label className="notes-search">
         <span aria-hidden="true">⌕</span>
         <input ref={searchRef} type="search" name="searchNote" value={searchQuery} autoComplete="off" onChange={handleSearchInputChange} placeholder="Search your notes…" aria-label="Search your notes" />
-        <kbd>⌘ K</kbd>
+        <kbd>{shortcutLabel}</kbd>
       </label>
       <div className="header-account">
         <span className="account-avatar" aria-hidden="true">{user?.name?.trim()?.charAt(0)?.toUpperCase() || "U"}</span>
