@@ -66,6 +66,7 @@ const Notes = () => {
   const [loading, setLoading] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
   const [error, setError] = useState("");
+  const [editorError, setEditorError] = useState("");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -154,11 +155,12 @@ const Notes = () => {
   const saveNote = async (event) => {
     event?.preventDefault?.();
     if (!addNote.title.trim() || !addNote.note.trim()) {
-      setError("Add a title and some note content before saving.");
+      setEditorError("Add a title and some note content before saving.");
       return;
     }
     setSaveBusy(true);
     setError("");
+    setEditorError("");
     try {
       if (toggle && isId) await request.put(`/update/${isId}`, addNote);
       else await request.post("/insert", addNote);
@@ -177,6 +179,7 @@ const Notes = () => {
 
   const updateNote = (id, title, note, color) => {
     setToggle(true);
+    setEditorError("");
     setAddNote({ title, note, color: color || "#ffffff" });
     setIsId(id);
   };
@@ -252,7 +255,7 @@ const Notes = () => {
         </div>
       </div>
       {loading ? <div className="notes-state"><span className="loading-dot"/> Gathering your notes…</div> : visibleNotes.length === 0 ? <div className="notes-empty"><span className="empty-icon">✳</span><h2>{searchQuery ? "Nothing found just yet" : "A fresh page."}</h2><p>{searchQuery ? "Try another search or a shorter phrase." : "Every good idea starts somewhere. Create your first note."}</p>{!searchQuery && <button type="button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}>Create your first note <span aria-hidden="true">↗</span></button>}</div> : <Note data={visibleNotes} viewMode={viewMode} updateNote={updateNote} deleteNote={deleteNote} />}
-      <Modal addNote={addNote} handleInput={handleInput} handleColorInput={handleColorInput} saveNote={saveNote} updateExistingNote={saveNote} toggle={toggle} saving={saveBusy} error={error} />
+      <Modal addNote={addNote} handleInput={handleInput} handleColorInput={handleColorInput} saveNote={saveNote} updateExistingNote={saveNote} toggle={toggle} saving={saveBusy} error={editorError} />
       <Fab setToggle={setToggle} setAddNote={(value) => { setAddNote(value); setIsId(""); }} />
     </section>
   );
