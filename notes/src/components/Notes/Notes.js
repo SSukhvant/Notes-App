@@ -161,6 +161,7 @@ const Notes = () => {
     setAddNote({ title: "", note: "", color: "#ffffff" });
     setIsId("");
     setToggle(false);
+    setEditorError("");
   };
 
   const saveNote = async (event) => {
@@ -181,7 +182,7 @@ const Notes = () => {
       await loadNotes();
       return true;
     } catch (err) {
-      setError(err.response?.data?.message || "Your note couldn't be saved. Your changes are still here.");
+      setEditorError(err.response?.data?.message || "Your note couldn't be saved. Your changes are still here.");
       return false;
     } finally {
       setSaveBusy(false);
