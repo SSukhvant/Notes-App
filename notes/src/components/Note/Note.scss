@@ -1,4 +1,4 @@
 /* Keep this stylesheet layout-neutral; shared layout is owned by Notes.scss. */
 .app__note .card-btn button{-webkit-appearance:none;appearance:none}
-.app__note .card-btn button i{display:block;font-size:14px;line-height:1}
+.app__note .card-btn button svg{display:block;width:16px;height:16px;flex:0 0 auto}
 .app__note .card-btn .delete:focus-visible{color:var(--danger)}
