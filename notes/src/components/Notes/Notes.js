@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Fab from "../Fab/Fab";
 import Header from "../Header/Header";
@@ -11,6 +11,15 @@ const api = axios.create({
   timeout: 15000,
 });
 const tokenKey = "keep-notes-session";
+const readSessionToken = () => {
+  try { return window.sessionStorage.getItem(tokenKey) || ""; } catch { return ""; }
+};
+const writeSessionToken = (token) => {
+  try { window.sessionStorage.setItem(tokenKey, token); } catch { /* Current session remains usable. */ }
+};
+const clearSessionToken = () => {
+  try { window.sessionStorage.removeItem(tokenKey); } catch { /* Continue sign-out if storage is blocked. */ }
+};
 const apiConfigured = Boolean(api.defaults.baseURL);
 const localApi = /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/|$)/i.test(api.defaults.baseURL);
 const themeKey = "keep-notes-theme";
@@ -43,14 +52,18 @@ const ThemeToggle = ({ theme, onToggle }) => (
     aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
   >
-    <span aria-hidden="true">{theme === "dark" ? <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></svg> : <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" /></svg>}</span>
+    <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
   </button>
 );
 
 const Notes = () => {
-  const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) || "");
-  const [sessionStatus, setSessionStatus] = useState(() => sessionStorage.getItem(tokenKey) ? "checking" : "signed-out");
-  const [sessionRetry, setSessionRetry] = useState(0);
+  const [token, setToken] = useState(readSessionToken);
+  const [authChecking, setAuthChecking] = useState(() => Boolean(readSessionToken()));
+  const [authCheckError, setAuthCheckError] = useState("");
+  const [editorError, setEditorError] = useState("");
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [theme, setTheme] = useState(getInitialTheme);
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState("login");
@@ -68,10 +81,6 @@ const Notes = () => {
   const [loading, setLoading] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
   const [error, setError] = useState("");
-  const [editorError, setEditorError] = useState("");
-  const [deleteCandidate, setDeleteCandidate] = useState(null);
-  const [deletingId, setDeletingId] = useState("");
-  const validatedSessionToken = useRef("");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -82,15 +91,6 @@ const Notes = () => {
     }
   }, [theme]);
 
-  useEffect(() => {
-    if (!deleteCandidate) return undefined;
-    const handleEscape = (event) => {
-      if (event.key === "Escape" && !deletingId) setDeleteCandidate(null);
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [deleteCandidate, deletingId]);
-
   const request = useMemo(() => {
     const instance = axios.create({ baseURL: api.defaults.baseURL, timeout: 15000 });
     if (token) instance.defaults.headers.common.Authorization = `Bearer ${token}`;
@@ -98,12 +98,12 @@ const Notes = () => {
   }, [token]);
 
   const signOut = useCallback(() => {
-    sessionStorage.removeItem(tokenKey);
-    validatedSessionToken.current = "";
+    clearSessionToken();
     setToken("");
-    setSessionStatus("signed-out");
     setUser(null);
     setData([]);
+    setAuthChecking(false);
+    setAuthCheckError("");
   }, []);
 
   const loadNotes = useCallback(async (query = searchQuery) => {
@@ -123,35 +123,29 @@ const Notes = () => {
 
   useEffect(() => {
     if (!token) {
-      validatedSessionToken.current = "";
-      setSessionStatus("signed-out");
-      setUser(null);
+      setAuthChecking(false);
       return undefined;
     }
-    if (validatedSessionToken.current === token) return undefined;
 
-    let cancelled = false;
-    setSessionStatus("checking");
+    let active = true;
     request.get("/auth/me")
       .then((response) => {
-        if (cancelled) return;
-        validatedSessionToken.current = token;
-        setUser(response.data.user);
-        setAuthError("");
-        setSessionStatus("authenticated");
+        if (active) setUser(response.data.user);
       })
       .catch((err) => {
-        if (cancelled) return;
+        if (!active) return;
         if (err.response?.status === 401) {
           signOut();
-          return;
+        } else {
+          setAuthCheckError("We couldn't verify your session. Check your connection and try again.");
         }
-        setSessionStatus("error");
-        setAuthError("We couldn’t verify your session. Check your connection and try again. Your saved session has been kept.");
+      })
+      .finally(() => {
+        if (active) setAuthChecking(false);
       });
 
-    return () => { cancelled = true; };
-  }, [request, signOut, token, sessionRetry]);
+    return () => { active = false; };
+  }, [request, signOut, token]);
 
   useEffect(() => {
     if (!token || !user) return;
@@ -170,10 +164,10 @@ const Notes = () => {
     try {
       const endpoint = authMode === "register" ? "/auth/register" : "/auth/login";
       const response = await api.post(endpoint, authForm);
-      sessionStorage.setItem(tokenKey, response.data.token);
-      validatedSessionToken.current = response.data.token;
+      writeSessionToken(response.data.token);
+      setAuthChecking(false);
+      setAuthCheckError("");
       setUser(response.data.user);
-      setSessionStatus("authenticated");
       setToken(response.data.token);
       setAuthForm({ name: "", email: "", password: "" });
     } catch (err) {
@@ -193,7 +187,10 @@ const Notes = () => {
     setAddNote((current) => ({ ...current, [event.target.name]: event.target.value }));
     setEditorError("");
   };
-  const handleColorInput = (color) => setAddNote((current) => ({ ...current, color }));
+  const handleColorInput = (color) => {
+    setAddNote((current) => ({ ...current, color }));
+    setEditorError("");
+  };
   const resetEditor = () => {
     setAddNote({ title: "", note: "", color: "#ffffff" });
     setIsId("");
@@ -205,10 +202,9 @@ const Notes = () => {
     event?.preventDefault?.();
     if (!addNote.title.trim() || !addNote.note.trim()) {
       setEditorError("Add a title and some note content before saving.");
-      return;
+      return false;
     }
     setSaveBusy(true);
-    setError("");
     setEditorError("");
     try {
       if (toggle && isId) await request.put(`/update/${isId}`, addNote);
@@ -228,29 +224,32 @@ const Notes = () => {
 
   const updateNote = (id, title, note, color) => {
     setToggle(true);
-    setEditorError("");
     setAddNote({ title, note, color: color || "#ffffff" });
     setIsId(id);
+    setEditorError("");
   };
 
-  const deleteNote = (id, title) => setDeleteCandidate({ id, title });
+  const deleteNote = (id) => {
+    const candidate = data.find((item) => item._id === id);
+    setDeleteCandidate(candidate || { _id: id, title: "this note" });
+    setDeleteError("");
+  };
 
   const confirmDelete = async () => {
-    if (!deleteCandidate || deletingId) return;
-    const id = deleteCandidate.id;
-    setDeletingId(id);
-    setError("");
+    if (!deleteCandidate || deleteBusy) return;
+    setDeleteBusy(true);
+    setDeleteError("");
     try {
-      await request.delete("/delete/" + id);
-      setDeleteCandidate(null);
+      await request.delete(`/delete/${deleteCandidate._id}`);
       setNotice("Note deleted");
       window.setTimeout(() => setNotice(""), 2500);
       await loadNotes();
-    } catch (err) {
-      setError(err.response?.data?.message || "Couldn’t delete this note. Please try again.");
+      document.querySelector('#deleteNoteModal [data-bs-dismiss="modal"]')?.click();
       setDeleteCandidate(null);
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || "Couldn't delete this note. Please try again.");
     } finally {
-      setDeletingId("");
+      setDeleteBusy(false);
     }
   };
 
@@ -262,29 +261,37 @@ const Notes = () => {
     return notes.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
   }, [data, sortMode]);
 
-  if (token && sessionStatus !== "authenticated") {
+  if (authChecking) {
     return (
-      <main className="session-check-shell">
-        <section className="session-check-card" role="status" aria-live="polite">
+      <main className="auth-shell auth-checking" data-theme={theme}>
+        <section className="auth-card" aria-live="polite" aria-busy="true">
           <img src="/brand-mark.svg" alt="" className="auth-brand-logo" />
-          {sessionStatus === "checking" ? (
-            <>
-              <p className="eyebrow">RESTORING YOUR SPACE</p>
-              <h1>Checking your session…</h1>
-              <p className="auth-subtitle">Your notes are being securely loaded.</p>
-              <span className="loading-dot" aria-hidden="true" />
-            </>
-          ) : (
-            <>
-              <p className="eyebrow">CONNECTION INTERRUPTED</p>
-              <h1>Let’s reconnect.</h1>
-              <p className="session-check-message">{authError}</p>
-              <button className="auth-submit" type="button" onClick={() => setSessionRetry((value) => value + 1)}>
-                <span>Try again</span><span aria-hidden="true">↻</span>
-              </button>
-              <button className="session-signout" type="button" onClick={signOut}>Sign in with another account</button>
-            </>
-          )}
+          <span className="auth-loading-spinner" aria-hidden="true" />
+          <p>Opening your workspace…</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (token && authCheckError && !user) {
+    return (
+      <main className="auth-shell auth-checking" data-theme={theme}>
+        <section className="auth-card" aria-labelledby="session-error-title">
+          <img src="/brand-mark.svg" alt="" className="auth-brand-logo" />
+          <h1 id="session-error-title">Your workspace is almost ready.</h1>
+          <p className="auth-subtitle" role="alert">{authCheckError}</p>
+          <button className="auth-submit" type="button" onClick={() => {
+            setAuthChecking(true);
+            setAuthCheckError("");
+            request.get("/auth/me")
+              .then((response) => setUser(response.data.user))
+              .catch((err) => {
+                if (err.response?.status === 401) signOut();
+                else setAuthCheckError("We couldn't verify your session. Check your connection and try again.");
+              })
+              .finally(() => setAuthChecking(false));
+          }}>Try again <span aria-hidden="true">↻</span></button>
+          <button className="auth-switch-button" type="button" onClick={signOut}>Sign in instead</button>
         </section>
       </main>
     );
@@ -302,14 +309,14 @@ const Notes = () => {
           <h1 id="auth-title">{authMode === "register" ? "Make room for your thoughts." : "Good to have you back."}</h1>
           <p className="auth-subtitle">A calmer place to capture ideas, keep plans, and find what matters.</p>
           {!apiConfigured && <p className="auth-error" role="alert">The API URL is missing. Configure REACT_APP_API_URL in your frontend deployment and rebuild.</p> }
-          <form className="auth-form" onSubmit={submitAuth}>
-            {authMode === "register" && <label>Your name<input autoComplete="name" value={authForm.name} onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })} minLength={2} maxLength={80} required /></label>}
-            <label>Email address<input type="email" autoComplete="email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} required /></label>
-            <label>Password<input type="password" autoComplete={authMode === "register" ? "new-password" : "current-password"} value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} minLength={authMode === "register" ? 12 : 1} maxLength={128} required />{authMode === "register" && <small>Use at least 12 characters.</small>}</label>
+          <form className="auth-form" onSubmit={submitAuth} aria-busy={authBusy}>
+            {authMode === "register" && <label>Your name<input autoComplete="name" value={authForm.name} onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })} minLength={2} maxLength={80} required disabled={authBusy} /></label>}
+            <label>Email address<input type="email" autoComplete="email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} required disabled={authBusy} /></label>
+            <label>Password<input type="password" autoComplete={authMode === "register" ? "new-password" : "current-password"} value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} minLength={authMode === "register" ? 12 : 1} maxLength={128} required disabled={authBusy} />{authMode === "register" && <small>Use at least 12 characters.</small>}</label>
             {authError && <p className="auth-error" role="alert">{authError}</p>}
             <button className="auth-submit" type="submit" disabled={authBusy}>{authBusy ? "Please wait…" : authMode === "register" ? "Create your account" : "Sign in"} <span aria-hidden="true">↗</span></button>
           </form>
-          <p className="auth-switch">{authMode === "register" ? "Already have an account?" : "New to Keep Notes?"} <button type="button" onClick={() => { setAuthMode(authMode === "register" ? "login" : "register"); setAuthError(""); }}> {authMode === "register" ? "Sign in" : "Create account"}</button></p>
+          <p className="auth-switch">{authMode === "register" ? "Already have an account?" : "New to Notes?"} <button type="button" disabled={authBusy} onClick={() => { setAuthMode(authMode === "register" ? "login" : "register"); setAuthError(""); }}> {authMode === "register" ? "Sign in" : "Create account"}</button></p>
           <p className="auth-footnote">Your notes are private to your account.</p>
         </section>
         <aside className="auth-art" aria-hidden="true"><div className="art-orbit orbit-one" /><div className="art-orbit orbit-two" /><div className="art-note art-note-back"><span>MONDAY / 09:41</span><i>✳</i><h3>Make space<br/>for good ideas.</h3><p>Collect thoughts. Connect the dots.</p></div><div className="art-note art-note-front"><span>FIELD NOTES&nbsp; · &nbsp;01</span><h3>Small steps,<br/>big picture.</h3><div className="art-lines"><i/><i/><i/></div><footer><span>PERSONAL JOURNAL</span><b>↗</b></footer></div><div className="art-caption">A little clarity goes a long way.</div></aside>
@@ -318,8 +325,8 @@ const Notes = () => {
   }
 
   return (
-    <section className="app" data-theme={theme}>
-      <Header searchQuery={searchQuery} handleSearchInputChange={(event) => setSearchQuery(event.target.value)} setToggle={setToggle} setAddNote={setAddNote} user={user} onSignOut={signOut} theme={theme} onToggleTheme={() => setTheme((current) => current === "dark" ? "light" : "dark")} />
+    <main className="app" id="app-top" data-theme={theme}>
+      <Header searchQuery={searchQuery} handleSearchInputChange={(event) => setSearchQuery(event.target.value)} user={user} onSignOut={signOut} theme={theme} onToggleTheme={() => setTheme((current) => current === "dark" ? "light" : "dark")} />
       <div className="notes-toolbar"><div><p className="eyebrow">YOUR WORKSPACE</p><h1>Your notes<span className="notes-count">{visibleNotes.length}</span></h1><p className="notes-description">A home for everything on your mind.</p></div><button type="button" className="new-note-button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}><span aria-hidden="true">＋</span> New note</button></div>
       {notice && <p className="app-notice" role="status">{notice}</p>}
       {error && <div className="app-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
@@ -340,23 +347,29 @@ const Notes = () => {
           </div>
         </div>
       </div>
-      {loading ? <div className="notes-state"><span className="loading-dot"/> Gathering your notes…</div> : visibleNotes.length === 0 ? <div className="notes-empty"><span className="empty-icon">✳</span><h2>{searchQuery ? "Nothing found just yet" : "A fresh page."}</h2><p>{searchQuery ? "Try another search or a shorter phrase." : "Every good idea starts somewhere. Create your first note."}</p>{!searchQuery && <button type="button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}>Create your first note <span aria-hidden="true">↗</span></button>}</div> : <Note data={visibleNotes} viewMode={viewMode} updateNote={updateNote} deleteNote={deleteNote} />}
-      {deleteCandidate && (
-        <div className="confirm-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !deletingId) setDeleteCandidate(null); }}>
-          <section className="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-description">
-            <span className="confirm-icon" aria-hidden="true">!</span>
-            <h2 id="delete-dialog-title">Delete this note?</h2>
-            <p id="delete-dialog-description"><strong>{deleteCandidate.title || "Untitled note"}</strong> will be permanently deleted. This can’t be undone.</p>
-            <div className="confirm-actions">
-              <button type="button" className="confirm-cancel" autoFocus onClick={() => setDeleteCandidate(null)} disabled={Boolean(deletingId)}>Cancel</button>
-              <button type="button" className="confirm-delete" onClick={confirmDelete} disabled={Boolean(deletingId)}>{deletingId ? "Deleting…" : "Delete note"}</button>
-            </div>
-          </section>
-        </div>
-      )}
+      {loading ? <div className="notes-state" role="status" aria-live="polite"><span className="loading-dot" aria-hidden="true"/> Gathering your notes…</div> : visibleNotes.length === 0 ? <div className="notes-empty"><span className="empty-icon">✳</span><h2>{searchQuery ? "Nothing found just yet" : "A fresh page."}</h2><p>{searchQuery ? "Try another search or a shorter phrase." : "Every good idea starts somewhere. Create your first note."}</p>{!searchQuery && <button type="button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}>Create your first note <span aria-hidden="true">↗</span></button>}</div> : <Note data={visibleNotes} viewMode={viewMode} updateNote={updateNote} deleteNote={deleteNote} />}
       <Modal addNote={addNote} handleInput={handleInput} handleColorInput={handleColorInput} saveNote={saveNote} updateExistingNote={saveNote} toggle={toggle} saving={saveBusy} error={editorError} />
+      <div className="modal fade" id="deleteNoteModal" tabIndex="-1" aria-labelledby="deleteNoteTitle" aria-describedby="deleteNoteDescription" aria-hidden="true">
+        <div className="modal-dialog modal-dialog-centered delete-confirm-dialog">
+          <div className="modal-content delete-confirm-content">
+            <div className="modal-header">
+              <div className="delete-confirm-icon" aria-hidden="true">!</div>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close delete confirmation" onClick={() => setDeleteCandidate(null)} />
+            </div>
+            <div className="modal-body">
+              <h2 id="deleteNoteTitle">Delete note?</h2>
+              <p id="deleteNoteDescription">“{deleteCandidate?.title || "This note"}” will be permanently deleted. This action cannot be undone.</p>
+              {deleteError && <p className="delete-confirm-error" role="alert">{deleteError}</p>}
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="delete-cancel-button" data-bs-dismiss="modal" disabled={deleteBusy} onClick={() => { setDeleteCandidate(null); setDeleteError(""); }}>Cancel</button>
+              <button type="button" className="delete-confirm-button" onClick={confirmDelete} disabled={deleteBusy || !deleteCandidate}>{deleteBusy ? "Deleting…" : "Delete note"}</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <Fab setToggle={setToggle} setAddNote={(value) => { setAddNote(value); setIsId(""); setEditorError(""); }} />
-    </section>
+    </main>
   );
 };
 
