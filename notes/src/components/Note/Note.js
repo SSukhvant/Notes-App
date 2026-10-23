@@ -6,27 +6,13 @@ const Note = ({ data, deleteNote, updateNote, viewMode = "grid" }) => {
     if (!value) return "";
 
     const date = new Date(value);
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "March",
-      "April",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sept",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-
-    let hrs = date.getHours();
-    let min = date.getMinutes();
-    let day = date.getDate();
-    const month = monthNames[date.getMonth()];
-
-    return `${String(hrs).padStart(2, "0")}:${String(min).padStart(2, "0")} · ${day} ${month}`;
+    if (Number.isNaN(date.getTime())) return "";
+    return new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
   };
   return (
     <div className={`app__notes ${viewMode === "list" ? "list-view" : ""}`}>
@@ -47,7 +33,7 @@ const Note = ({ data, deleteNote, updateNote, viewMode = "grid" }) => {
                   <p className="card-text">{item.note}</p>
                   <div className="card-time-btn">
                     <span className="time-date">
-                      {formatTimeDate(item.createdAt)}
+                      {formatTimeDate(item.updatedAt || item.createdAt)}
                     </span>
                     <div className="card-btn">
                       <button
@@ -63,15 +49,15 @@ const Note = ({ data, deleteNote, updateNote, viewMode = "grid" }) => {
                           )
                         }
                         className="edit"
-                        aria-label={`Edit ${item.title}`}
+                        aria-label={`Edit note: ${item.title}`} title="Edit note"
                       >
                         <i className="fi fi-rr-pencil"></i>
                       </button>
                       <button
                         type="button"
-                        onClick={() => deleteNote(item._id)}
+                        onClick={() => deleteNote(item._id, item.title)}
                         className="delete"
-                        aria-label={`Delete ${item.title}`}
+                        aria-label={`Delete note: ${item.title}`} title="Delete note"
                       >
                         <i className="fi fi-rr-trash"></i>
                       </button>
