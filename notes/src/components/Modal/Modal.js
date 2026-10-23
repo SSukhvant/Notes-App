@@ -22,8 +22,8 @@ const Modal = ({ addNote, handleInput, handleColorInput, updateExistingNote, sav
             <label className="editor-label" htmlFor="title-name">Title</label>
             <input type="text" className="form-control note-title-input" id="title-name" name="title" placeholder="Give this note a name" value={addNote.title} onChange={handleInput} maxLength={160} autoComplete="off" />
             <label className="editor-label mt-4" htmlFor="message-text">Your thoughts</label>
-            <textarea className="form-control note-body-input" id="message-text" name="note" placeholder="Start writing… no thought is too small." rows={6} value={addNote.note} onChange={handleInput} maxLength={20000} />
-            <div className="editor-color-row"><span className="editor-label">Paper color</span><div className="color-options" role="radiogroup" aria-label="Note color">
+            <textarea className="form-control note-body-input" id="message-text" name="note" placeholder="Start writing… no thought is too small." rows={5} value={addNote.note} onChange={handleInput} maxLength={20000} />
+            <div className="editor-color-row"><span className="editor-label" id="paper-color-label">Paper color</span><div className="color-options" role="radiogroup" aria-labelledby="paper-color-label">
               {COLORS.map((color) => <button key={color} type="button" role="radio" aria-checked={(addNote.color || "#ffffff") === color} aria-label={color === "#ffffff" ? "White" : `Color ${color}`} className={`color-option ${(addNote.color || "#ffffff") === color ? "selected" : ""}`} style={{ backgroundColor: color }} onClick={() => handleColorInput(color)}><span>{(addNote.color || "#ffffff") === color ? "✓" : ""}</span></button>)}
             </div></div>
             {error && <p className="editor-error" role="alert">{error}</p>}
