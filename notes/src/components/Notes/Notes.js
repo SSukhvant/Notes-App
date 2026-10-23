@@ -67,6 +67,8 @@ const Notes = () => {
   const [saveBusy, setSaveBusy] = useState(false);
   const [error, setError] = useState("");
   const [editorError, setEditorError] = useState("");
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const [deletingId, setDeletingId] = useState("");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -76,6 +78,15 @@ const Notes = () => {
       // Theme still works for this session when storage is unavailable.
     }
   }, [theme]);
+
+  useEffect(() => {
+    if (!deleteCandidate) return undefined;
+    const handleEscape = (event) => {
+      if (event.key === "Escape" && !deletingId) setDeleteCandidate(null);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [deleteCandidate, deletingId]);
 
   const request = useMemo(() => {
     const instance = axios.create({ baseURL: api.defaults.baseURL, timeout: 15000 });
@@ -184,15 +195,24 @@ const Notes = () => {
     setIsId(id);
   };
 
-  const deleteNote = async (id) => {
-    if (!window.confirm("Delete this note permanently? This action cannot be undone.")) return;
+  const deleteNote = (id, title) => setDeleteCandidate({ id, title });
+
+  const confirmDelete = async () => {
+    if (!deleteCandidate || deletingId) return;
+    const id = deleteCandidate.id;
+    setDeletingId(id);
+    setError("");
     try {
-      await request.delete(`/delete/${id}`);
+      await request.delete("/delete/" + id);
+      setDeleteCandidate(null);
       setNotice("Note deleted");
       window.setTimeout(() => setNotice(""), 2500);
       await loadNotes();
     } catch (err) {
-      setError(err.response?.data?.message || "Couldn't delete this note.");
+      setError(err.response?.data?.message || "Couldn’t delete this note. Please try again.");
+      setDeleteCandidate(null);
+    } finally {
+      setDeletingId("");
     }
   };
 
@@ -255,6 +275,19 @@ const Notes = () => {
         </div>
       </div>
       {loading ? <div className="notes-state"><span className="loading-dot"/> Gathering your notes…</div> : visibleNotes.length === 0 ? <div className="notes-empty"><span className="empty-icon">✳</span><h2>{searchQuery ? "Nothing found just yet" : "A fresh page."}</h2><p>{searchQuery ? "Try another search or a shorter phrase." : "Every good idea starts somewhere. Create your first note."}</p>{!searchQuery && <button type="button" data-bs-toggle="modal" data-bs-target="#noteModal" onClick={resetEditor}>Create your first note <span aria-hidden="true">↗</span></button>}</div> : <Note data={visibleNotes} viewMode={viewMode} updateNote={updateNote} deleteNote={deleteNote} />}
+      {deleteCandidate && (
+        <div className="confirm-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !deletingId) setDeleteCandidate(null); }}>
+          <section className="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-description">
+            <span className="confirm-icon" aria-hidden="true">!</span>
+            <h2 id="delete-dialog-title">Delete this note?</h2>
+            <p id="delete-dialog-description"><strong>{deleteCandidate.title || "Untitled note"}</strong> will be permanently deleted. This can’t be undone.</p>
+            <div className="confirm-actions">
+              <button type="button" className="confirm-cancel" onClick={() => setDeleteCandidate(null)} disabled={Boolean(deletingId)}>Cancel</button>
+              <button type="button" className="confirm-delete" onClick={confirmDelete} disabled={Boolean(deletingId)}>{deletingId ? "Deleting…" : "Delete note"}</button>
+            </div>
+          </section>
+        </div>
+      )}
       <Modal addNote={addNote} handleInput={handleInput} handleColorInput={handleColorInput} saveNote={saveNote} updateExistingNote={saveNote} toggle={toggle} saving={saveBusy} error={editorError} />
       <Fab setToggle={setToggle} setAddNote={(value) => { setAddNote(value); setIsId(""); }} />
     </section>
