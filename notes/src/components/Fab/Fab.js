@@ -5,7 +5,7 @@ const Fab = ({setToggle, setAddNote}) => {
   return (
     <button
     type="button"
-    className="fab bg-warning text-white shadow-sm"
+    className="fab"
     data-bs-toggle="modal"
     data-bs-target="#noteModal"
     onClick={() => {

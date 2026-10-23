@@ -1,7 +1,7 @@
 import React from "react";
 import "./Note.scss";
 
-const Note = ({ data, deleteNote, updateNote }) => {
+const Note = ({ data, deleteNote, updateNote, viewMode = "grid" }) => {
   const formatTimeDate = (value) => {
     if (!value) return "";
 
@@ -29,19 +29,17 @@ const Note = ({ data, deleteNote, updateNote }) => {
     return `${String(hrs).padStart(2, "0")}:${String(min).padStart(2, "0")} · ${day} ${month}`;
   };
   return (
-    <div className="app__notes row p-2 p-lg-3 mt-5 rounded bg-light">
+    <div className={`app__notes ${viewMode === "list" ? "list-view" : ""}`}>
       {data &&
         data.map((item) => {
           return (
             <div
-              className="app__note col-sm-3 p-xxl-3 p-xl-2 p-lg-3 p-2"
+              className="app__note"
               key={item._id}
             >
               <div
                 className="card shadow rounded border-0"
-                style={{
-                  backgroundColor: `${item.color === "" ? "#fff" : item.color}`,
-                }}
+                style={{ "--note-color": item.color || "#ffffff" }}
               >
                 <div className="card-body">
                   <h5 className="card-title">{item.title}</h5>
