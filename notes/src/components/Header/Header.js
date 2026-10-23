@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import logo32 from "../../assets/logo32.png";
 
 const Header = ({ searchQuery, handleSearchInputChange, setToggle, setAddNote, user, onSignOut, theme, onToggleTheme }) => {
   const searchRef = useRef(null);
@@ -18,8 +17,7 @@ const Header = ({ searchQuery, handleSearchInputChange, setToggle, setAddNote, u
   return (
     <header className="app__header">
       <a className="app__name-logo" href="/" aria-label="Keep Notes home">
-        <img src={logo32} alt="" className="app__logo" />
-        <span className="app__name">keep notes<span className="brand-period">.</span></span>
+        <img src="/brand-mark.svg" alt="" className="app__logo" />
       </a>
       <label className="notes-search">
         <span aria-hidden="true">⌕</span>
