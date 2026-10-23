@@ -49,6 +49,8 @@ const ThemeToggle = ({ theme, onToggle }) => (
 
 const Notes = () => {
   const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) || "");
+  const [sessionStatus, setSessionStatus] = useState(() => sessionStorage.getItem(tokenKey) ? "checking" : "signed-out");
+  const [sessionRetry, setSessionRetry] = useState(0);
   const [theme, setTheme] = useState(getInitialTheme);
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState("login");
@@ -97,6 +99,7 @@ const Notes = () => {
   const signOut = useCallback(() => {
     sessionStorage.removeItem(tokenKey);
     setToken("");
+    setSessionStatus("signed-out");
     setUser(null);
     setData([]);
   }, []);
@@ -117,9 +120,33 @@ const Notes = () => {
   }, [request, searchQuery, signOut, token]);
 
   useEffect(() => {
-    if (!token) return;
-    request.get("/auth/me").then((response) => setUser(response.data.user)).catch(() => signOut());
-  }, [request, signOut, token]);
+    if (!token) {
+      setSessionStatus("signed-out");
+      setUser(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setSessionStatus("checking");
+    request.get("/auth/me")
+      .then((response) => {
+        if (cancelled) return;
+        setUser(response.data.user);
+        setAuthError("");
+        setSessionStatus("authenticated");
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err.response?.status === 401) {
+          signOut();
+          return;
+        }
+        setSessionStatus("error");
+        setAuthError("We couldn’t verify your session. Check your connection and try again. Your saved session has been kept.");
+      });
+
+    return () => { cancelled = true; };
+  }, [request, signOut, token, sessionRetry]);
 
   useEffect(() => {
     if (!token || !user) return;
@@ -140,6 +167,7 @@ const Notes = () => {
       const response = await api.post(endpoint, authForm);
       sessionStorage.setItem(tokenKey, response.data.token);
       setUser(response.data.user);
+      setSessionStatus("authenticated");
       setToken(response.data.token);
       setAuthForm({ name: "", email: "", password: "" });
     } catch (err) {
@@ -224,6 +252,34 @@ const Notes = () => {
     if (sortMode === "created-desc") return notes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     return notes.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
   }, [data, sortMode]);
+
+  if (token && sessionStatus !== "authenticated") {
+    return (
+      <main className="session-check-shell">
+        <section className="session-check-card" role="status" aria-live="polite">
+          <img src="/brand-mark.svg" alt="" className="auth-brand-logo" />
+          {sessionStatus === "checking" ? (
+            <>
+              <p className="eyebrow">RESTORING YOUR SPACE</p>
+              <h1>Checking your session…</h1>
+              <p className="auth-subtitle">Your notes are being securely loaded.</p>
+              <span className="loading-dot" aria-hidden="true" />
+            </>
+          ) : (
+            <>
+              <p className="eyebrow">CONNECTION INTERRUPTED</p>
+              <h1>Let’s reconnect.</h1>
+              <p className="session-check-message">{authError}</p>
+              <button className="auth-submit" type="button" onClick={() => setSessionRetry((value) => value + 1)}>
+                <span>Try again</span><span aria-hidden="true">↻</span>
+              </button>
+              <button className="session-signout" type="button" onClick={signOut}>Sign in with another account</button>
+            </>
+          )}
+        </section>
+      </main>
+    );
+  }
 
   if (!token || !user) {
     return (
