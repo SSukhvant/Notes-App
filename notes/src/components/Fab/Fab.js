@@ -1,21 +1,21 @@
-import React from 'react'
-import './Fab.scss'
+import React from "react";
+import "./Fab.scss";
 
-const Fab = ({setToggle, setAddNote}) => {
-  return (
-    <button
+const Fab = ({ setToggle, setAddNote }) => (
+  <button
     type="button"
     className="fab"
     data-bs-toggle="modal"
     data-bs-target="#noteModal"
     onClick={() => {
       setToggle(false);
-      setAddNote({ title: "", note: "", color:"" });
+      setAddNote({ title: "", note: "", color: "#ffffff" });
     }}
+    aria-label="Create a note"
+    title="Create a note"
   >
-    <i className="fi fi-br-plus"></i>
+    <span aria-hidden="true">＋</span>
   </button>
-  )
-}
+);
 
-export default Fab
+export default Fab;
