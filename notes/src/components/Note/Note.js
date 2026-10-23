@@ -28,13 +28,13 @@ const Note = ({ data, deleteNote, updateNote, viewMode = "grid" }) => {
                 style={{ "--note-color": item.color || "#ffffff" }}
               >
                 <div className="card-body">
-                  <h5 className="card-title">{item.title}</h5>
+                  <h2 className="card-title">{item.title}</h2>
                   <hr />
                   <p className="card-text">{item.note}</p>
                   <div className="card-time-btn">
-                    <span className="time-date">
+                    <time className="time-date" dateTime={item.updatedAt || item.createdAt || undefined}>
                       {formatTimeDate(item.updatedAt || item.createdAt)}
-                    </span>
+                    </time>
                     <div className="card-btn">
                       <button
                         type="button"
@@ -49,17 +49,21 @@ const Note = ({ data, deleteNote, updateNote, viewMode = "grid" }) => {
                           )
                         }
                         className="edit"
-                        aria-label={`Edit note: ${item.title}`} title="Edit note"
+                        title="Edit note"
+                        aria-label={`Edit ${item.title}`}
                       >
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+                        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m14 5 5 5M4 20l4.4-.9L19 8.5a2.1 2.1 0 0 0-3-3L5.4 16.1 4 20Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </button>
                       <button
                         type="button"
-                        onClick={() => deleteNote(item._id, item.title)}
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteNoteModal"
+                        onClick={() => deleteNote(item._id)}
                         className="delete"
-                        aria-label={`Delete note: ${item.title}`} title="Delete note"
+                        title="Delete note"
+                        aria-label={`Delete ${item.title}`}
                       >
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 10v6M14 10v6"/></svg>
+                        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m4 4v5m4-5v5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </button>
                     </div>
                   </div>
