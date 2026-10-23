@@ -1,5 +1,25 @@
-.fab{position:fixed;z-index:4;right:max(20px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));display:grid;width:54px;height:54px;place-items:center;border:0;border-radius:18px;background:var(--primary);color:var(--on-primary);box-shadow:var(--shadow-raised);font-size:25px;line-height:1;cursor:pointer;transition:transform .18s,box-shadow .18s,background-color .18s}
-.fab:hover{transform:translateY(-2px);background:var(--primary-hover);box-shadow:var(--shadow-raised)}
-.fab:focus-visible{outline:3px solid color-mix(in srgb,var(--primary),transparent 35%);outline-offset:4px}
-@media(min-width:992px){.fab{display:none}}
-@media(prefers-reduced-motion:reduce){.fab{transition:none}}
+.fab {
+  position: fixed;
+  z-index: 4;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  display: grid;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 18px;
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary), transparent 70%), var(--shadow-raised);
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+.fab:hover { transform: translateY(-2px); background: var(--primary-hover); }
+.fab:active { transform: scale(.97); }
+.fab:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
+@media (min-width: 761px) { .fab { display: none; } }
+@media (max-width: 760px) { .fab { width: 56px; height: 56px; border-radius: 18px; } }
+@media (prefers-reduced-motion: reduce) { .fab { transition-duration: .01ms; } }
