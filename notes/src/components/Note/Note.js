@@ -51,7 +51,7 @@ const Note = ({ data, deleteNote, updateNote, viewMode = "grid" }) => {
                         className="edit"
                         aria-label={`Edit note: ${item.title}`} title="Edit note"
                       >
-                        <i className="fi fi-rr-pencil"></i>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
                       </button>
                       <button
                         type="button"
@@ -59,7 +59,7 @@ const Note = ({ data, deleteNote, updateNote, viewMode = "grid" }) => {
                         className="delete"
                         aria-label={`Delete note: ${item.title}`} title="Delete note"
                       >
-                        <i className="fi fi-rr-trash"></i>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 10v6M14 10v6"/></svg>
                       </button>
                     </div>
                   </div>
