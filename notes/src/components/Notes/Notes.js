@@ -189,7 +189,10 @@ const Notes = () => {
     }
   };
 
-  const handleInput = (event) => setAddNote((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const handleInput = (event) => {
+    setAddNote((current) => ({ ...current, [event.target.name]: event.target.value }));
+    setEditorError("");
+  };
   const handleColorInput = (color) => setAddNote((current) => ({ ...current, color }));
   const resetEditor = () => {
     setAddNote({ title: "", note: "", color: "#ffffff" });
@@ -352,7 +355,7 @@ const Notes = () => {
         </div>
       )}
       <Modal addNote={addNote} handleInput={handleInput} handleColorInput={handleColorInput} saveNote={saveNote} updateExistingNote={saveNote} toggle={toggle} saving={saveBusy} error={editorError} />
-      <Fab setToggle={setToggle} setAddNote={(value) => { setAddNote(value); setIsId(""); }} />
+      <Fab setToggle={setToggle} setAddNote={(value) => { setAddNote(value); setIsId(""); setEditorError(""); }} />
     </section>
   );
 };
