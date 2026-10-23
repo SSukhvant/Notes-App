@@ -20,6 +20,10 @@ const COLORS = new Set(["#fab1a0", "#ffeaa7", "#74b9ff", "#a29bfe", "#55efc4", "
 
 app.disable("x-powered-by");
 app.use(cors({ origin(origin, callback) { if (!origin || CLIENT_ORIGINS.includes(origin.replace(/\/+$/, ""))) return callback(null, true); return callback(new Error("Origin is not allowed by CORS.")); }, methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], allowedHeaders: ["Content-Type", "Authorization"] }));
+
+// Keep liveness checks independent of MongoDB so deployment health can be
+// distinguished from database connectivity failures.
+app.get("/health", (req, res) => res.json({ success: true, status: "ok" }));
 app.use(express.json({ limit: "32kb" }));
 const rateBuckets = new Map();
 function rateLimit({ windowMs, limit }) {
@@ -75,7 +79,6 @@ const createToken = (userId) => {
   return payload + "." + signature;
 };
 
-app.get("/health", (req, res) => res.json({ success: true, status: "ok" }));
 
 app.post("/auth/register", authLimiter, asyncRoute(async (req, res) => {
   const name = clean(req.body?.name, 80);
