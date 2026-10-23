@@ -13,4 +13,6 @@ root.render(
   </React.StrictMode>
 );
 
-serviceWorkerRegistration.register();
+// Avoid serving stale production bundles or API configuration from a service
+// worker. Also removes registrations left behind by previous releases.
+serviceWorkerRegistration.unregister();
