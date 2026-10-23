@@ -40,3 +40,16 @@ button,input,textarea,select{font:inherit}button{-webkit-tap-highlight-color:tra
 .confirm-delete{border-color:transparent!important;background:var(--danger)!important;color:#fff!important}.confirm-delete:hover:not(:disabled){filter:brightness(.94);transform:translateY(-1px)}
 .confirm-actions button:disabled{opacity:.65;cursor:wait}
 @media(max-width:420px){.confirm-dialog{padding:22px;border-radius:20px}.confirm-actions button{flex:1}}
+
+/* Session recovery screen keeps a temporary connection failure distinct from sign-in. */
+.session-check-shell{display:grid;min-height:100vh;place-items:center;padding:24px;background:var(--page);color:var(--ink)}
+.session-check-card{display:flex;width:min(100%,420px);flex-direction:column;align-items:flex-start;padding:36px;border:1px solid var(--line);border-radius:24px;background:var(--surface-raised);box-shadow:var(--shadow-soft)}
+.session-check-card .auth-brand-logo{width:44px;height:44px;margin-bottom:30px}
+.session-check-card h1{margin:0;color:var(--ink);font-size:clamp(27px,4vw,34px);font-weight:700;line-height:1.12;letter-spacing:-1.1px}
+.session-check-card .auth-subtitle{margin:12px 0 20px;color:var(--muted);font-size:14px;line-height:1.6}
+.session-check-card .loading-dot{margin-top:4px}
+.session-check-message{margin:13px 0 22px;color:var(--muted);font-size:14px;line-height:1.65}
+.session-check-card .auth-submit{width:100%;margin-top:0}
+.session-signout{align-self:center;margin-top:18px;padding:8px;border:0;border-radius:8px;background:transparent;color:var(--primary);font-size:13px;font-weight:650;cursor:pointer}
+.session-signout:hover{background:var(--primary-soft)}
+@media(max-width:480px){.session-check-card{padding:26px;border-radius:20px}}
