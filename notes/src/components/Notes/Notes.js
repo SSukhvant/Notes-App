@@ -345,7 +345,7 @@ const Notes = () => {
             <h2 id="delete-dialog-title">Delete this note?</h2>
             <p id="delete-dialog-description"><strong>{deleteCandidate.title || "Untitled note"}</strong> will be permanently deleted. This can’t be undone.</p>
             <div className="confirm-actions">
-              <button type="button" className="confirm-cancel" onClick={() => setDeleteCandidate(null)} disabled={Boolean(deletingId)}>Cancel</button>
+              <button type="button" className="confirm-cancel" autoFocus onClick={() => setDeleteCandidate(null)} disabled={Boolean(deletingId)}>Cancel</button>
               <button type="button" className="confirm-delete" onClick={confirmDelete} disabled={Boolean(deletingId)}>{deletingId ? "Deleting…" : "Delete note"}</button>
             </div>
           </section>
